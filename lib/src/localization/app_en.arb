@@ -1,0 +1,6 @@
+{
+  "appTitle": "roc_flight",
+  "@appTitle": {
+    "description": "The title of the application"
+  }
+}
