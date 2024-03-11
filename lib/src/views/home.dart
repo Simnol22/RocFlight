@@ -47,19 +47,19 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         currentIndex: _currentIndex,
         items: const [
           BottomNavigationBarItem(
-            icon: Icon(Icons.flight),
+            icon: Icon(Icons.rocket_launch),
             label: 'Flight',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.data_array),
+            icon: Icon(Icons.satellite_alt),
             label: 'LiveData',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.search),
+            icon: Icon(Icons.map),
             label: 'Find',
           ),
           BottomNavigationBarItem(
-            icon: Icon(Icons.history),
+            icon: Icon(Icons.timeline),
             label: 'History',
           )
         ],
