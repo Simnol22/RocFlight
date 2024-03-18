@@ -39,10 +39,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       ),
       body: _children[_currentIndex],
       bottomNavigationBar: BottomNavigationBar(
-        backgroundColor: Colors.blue,
-        selectedItemColor: Colors.red,
-        unselectedItemColor: Colors.green,
-        type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.shifting,
         onTap: onTabTapped,
         currentIndex: _currentIndex,
         items: const [
