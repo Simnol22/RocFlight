@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "572763848177",
+    "project_id": "log450---roc-flight",
+    "storage_bucket": "log450---roc-flight.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:572763848177:android:7d73e552c6f9c842919850",
+        "android_client_info": {
+          "package_name": "com.example.roc_flight"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMDapZpz61RXNBrsYhALPVCobIgcCL7c4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
