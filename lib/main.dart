@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:provider/provider.dart';
-import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 
 import 'src/app.dart';
 import 'src/settings/settings_controller.dart';
