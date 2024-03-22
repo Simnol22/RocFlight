@@ -19,6 +19,8 @@ dependencies:
     sdk: flutter
   google_fonts: ^6.2.1
   provider: ^6.1.2
+  google_maps_flutter: ^2.0.10
+  geolocator: ^7.6.2
 
 dev_dependencies:
   flutter_test:
