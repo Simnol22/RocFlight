@@ -3,6 +3,8 @@ import 'package:roc_flight/src/views/find_view.dart';
 import 'package:roc_flight/src/views/flight_view.dart';
 import 'package:roc_flight/src/views/history_view.dart';
 import 'package:roc_flight/src/views/live_data_view.dart';
+import 'package:provider/provider.dart';
+import 'package:roc_flight/src/viewmodel/location_view_model.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -15,12 +17,24 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   int _currentIndex = 0;
-  final List<Widget> _children = [
-    const FlightView(),
-    const LiveDataView(),
-    const FindView(),
-    const HistoryView(),
-  ];
+
+  Widget _getCurrentPage() {
+    switch (_currentIndex) {
+      case 0:
+        return const FlightView();
+      case 1:
+        return const LiveDataView();
+      case 2:
+        return ChangeNotifierProvider<LocationViewModel>(
+          create: (_) => LocationViewModel(),
+          child: const FindView(),
+        );
+      case 3:
+        return const HistoryView();
+      default:
+        return const FlightView();
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +51,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           ),
         ],
       ),
-      body: _children[_currentIndex],
+      body: _getCurrentPage(), // Dynamically get the current page
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.shifting,
         onTap: onTabTapped,
@@ -58,7 +72,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           BottomNavigationBarItem(
             icon: Icon(Icons.timeline),
             label: 'History',
-          )
+          ),
         ],
       ),
     );

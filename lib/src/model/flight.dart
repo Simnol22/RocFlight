@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-enum FlightStatus { 
+enum FlightStatus {
   created, // 0
   started, // 1
   ongoing, // 2
@@ -15,19 +15,19 @@ class Flight {
   String launcherId;
   List<String> operatorIds;
 
-  Flight({
-    this.uniqueId,
-    this.code,
-    this.status = FlightStatus.created,
-    required this.createdAt,
-    required this.launcherId,
-    required this.operatorIds
-  });
+  Flight(
+      {this.uniqueId,
+      this.code,
+      this.status = FlightStatus.created,
+      required this.createdAt,
+      required this.launcherId,
+      required this.operatorIds});
 
-  String get flightCode => code??"NO CODE";
+  String get flightCode => code ?? "NO CODE";
 
   bool get isActive => status != FlightStatus.ended;
-  bool get iStarted => status == FlightStatus.started || status == FlightStatus.ongoing;
+  bool get iStarted =>
+      status == FlightStatus.started || status == FlightStatus.ongoing;
 
   bool get amILauncher => true; // launcherId == ""; TODO check current user Id
 
