@@ -36,8 +36,7 @@ class LocationService {
     try {
       return await _determinePosition();
     } catch (e) {
-      print('Error: $e');
+      return Future.error('Error fetching current location');
     }
-    throw Exception('Failed to get current location.');
   }
 }

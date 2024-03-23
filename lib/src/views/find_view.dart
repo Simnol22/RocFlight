@@ -19,7 +19,7 @@ class _FindViewState extends State<FindView> {
     Future.microtask(() {
       final locationViewModel =
           Provider.of<LocationViewModel>(context, listen: false);
-      locationViewModel.fetchCurrentLocation();
+      locationViewModel.fetchUserLocation();
       locationViewModel.fetchRocketLocation();
     });
   }
@@ -28,14 +28,54 @@ class _FindViewState extends State<FindView> {
   Widget build(BuildContext context) {
     final locationViewModel = Provider.of<LocationViewModel>(context);
 
-    // Use the current and rocket locations from the ViewModel
-    final currentLocation = locationViewModel.currentPosition != null
+    // Determine the current user's location; null if not available
+    final LatLng? currentLocation = locationViewModel.currentPosition != null
         ? LatLng(locationViewModel.currentPosition!.latitude,
             locationViewModel.currentPosition!.longitude)
-        : LatLng(0, 0); // Default or loading state
-    final rocketLocation = locationViewModel.rocketLocation ??
-        LatLng(0, 0); // Default or loading state
-    final distanceToFlight = locationViewModel.calculateDistanceToRocket();
+        : null;
+
+    // Determine the rocket's location; null if not available
+    final LatLng? rocketLocation = locationViewModel.rocketLocation;
+
+    // Calculate distance only if both current and rocket locations are available
+    final double? distanceToRocket =
+        (currentLocation != null && rocketLocation != null)
+            ? locationViewModel.calculateDistanceToRocket()
+            : null;
+
+    Set<Marker> markers = {};
+    Set<Polyline> polylines = {};
+
+    // Add marker for current location if available
+    if (currentLocation != null) {
+      markers.add(Marker(
+        markerId: const MarkerId('current_location'),
+        position: currentLocation,
+      ));
+    }
+
+    // Add marker for rocket location if available
+    if (rocketLocation != null) {
+      markers.add(Marker(
+        markerId: const MarkerId('rocket_location'),
+        position: rocketLocation,
+      ));
+    }
+
+    // Add polyline only if both locations are available
+    if (currentLocation != null && rocketLocation != null) {
+      polylines.add(Polyline(
+        polylineId: const PolylineId('route'),
+        points: [currentLocation, rocketLocation],
+        color: Colors.blue,
+        width: 5,
+      ));
+    }
+
+    // Decide the initial camera position based on available locations
+    LatLng initialCameraPosition = currentLocation ??
+        rocketLocation ??
+        const LatLng(45.5017, -73.5673); // Montreal
 
     return Scaffold(
       body: Column(
@@ -45,9 +85,11 @@ class _FindViewState extends State<FindView> {
             padding: const EdgeInsets.all(8.0),
             child: Card(
               child: ListTile(
-                title: const Text('Flight Location'),
+                title: const Text('Rocket Location'),
                 subtitle: Text(
-                  'Lat: ${rocketLocation.latitude} Lon: ${rocketLocation.longitude}\nDistance: ${distanceToFlight.toStringAsFixed(2)}m',
+                  rocketLocation != null
+                      ? 'Lat: ${rocketLocation.latitude} Lon: ${rocketLocation.longitude}${distanceToRocket != null ? '\nDistance: ${distanceToRocket.toStringAsFixed(2)}m' : ''}'
+                      : 'Rocket location not available',
                 ),
                 trailing: const Icon(Icons.rocket),
               ),
@@ -56,35 +98,11 @@ class _FindViewState extends State<FindView> {
           Expanded(
             child: GoogleMap(
               initialCameraPosition: CameraPosition(
-                target: currentLocation.latitude != 0 &&
-                        currentLocation.longitude != 0
-                    ? currentLocation
-                    : rocketLocation,
-                zoom: 14,
+                target: initialCameraPosition,
+                zoom: 5, // Adjusted for a broader view of Canada
               ),
-              markers: {
-                if (locationViewModel.currentPosition != null)
-                  Marker(
-                    // Marker for Current location
-                    markerId: const MarkerId('current_location'),
-                    position: currentLocation,
-                  ),
-                Marker(
-                  // Marker for Rocket's location
-                  markerId: const MarkerId('rocket_location'),
-                  position: rocketLocation,
-                ),
-              },
-              polylines: {
-                if (locationViewModel.currentPosition != null &&
-                    locationViewModel.rocketLocation != null)
-                  Polyline(
-                    polylineId: const PolylineId('route'),
-                    points: [currentLocation, rocketLocation],
-                    color: Colors.blue,
-                    width: 5,
-                  ),
-              },
+              markers: markers,
+              polylines: polylines,
             ),
           ),
         ],
