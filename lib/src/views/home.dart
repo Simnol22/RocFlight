@@ -5,6 +5,8 @@ import 'package:roc_flight/src/views/history_view.dart';
 import 'package:roc_flight/src/views/live_data_view.dart';
 import 'package:provider/provider.dart';
 import 'package:roc_flight/src/viewmodel/location_view_model.dart';
+import 'package:roc_flight/src/location_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -17,6 +19,27 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _requestLocationPermission(); // Request location permission on app start
+  }
+
+  void _requestLocationPermission() async {
+    final prefs = await SharedPreferences.getInstance();
+    bool? askedBefore = prefs.getBool('askedForLocationPermission');
+
+    if (askedBefore != true) {
+      bool hasPermission =
+          await LocationService().checkAndRequestLocationPermissions();
+      await prefs.setBool('askedForLocationPermission', true);
+
+      if (!hasPermission) {
+        // TODO: Handle the case where location permissions are not granted
+      }
+    }
+  }
 
   Widget _getCurrentPage() {
     switch (_currentIndex) {
