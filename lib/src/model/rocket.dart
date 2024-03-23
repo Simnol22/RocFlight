@@ -19,7 +19,7 @@ class Rocket {
 
   factory Rocket.fromMap(Map<String, dynamic> map) {
     return Rocket(
-      rocketId: map['rocketId'] ?? '', // Assuming 'rocketId' is always present
+      rocketId: map['rocketId'] ?? '',
       latitude: map['latitude']?.toDouble() ?? 0.0,
       longitude: map['longitude']?.toDouble() ?? 0.0,
     );
