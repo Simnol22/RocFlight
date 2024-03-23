@@ -14,9 +14,15 @@ class LocationViewModel extends ChangeNotifier {
   Position? get currentPosition => _currentPosition;
   LatLng? get rocketLocation => _rocketLocation;
 
-  Future<void> fetchCurrentLocation() async {
-    _currentPosition = await _locationService.getCurrentLocation();
-    notifyListeners(); // Notify the UI that the location has been updated
+  Future<void> fetchUserLocation() async {
+    try {
+      Position position = await _locationService.getCurrentLocation();
+      _currentPosition = position;
+    } catch (e) {
+      print('Error fetching current location: $e');
+      // Don't update _currentPosition in case of an error
+    }
+    notifyListeners(); // Notify the UI regardless to update based on available data
   }
 
   // Fetch the rocket's location from Firebase
