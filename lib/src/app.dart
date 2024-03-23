@@ -8,6 +8,8 @@ import 'package:roc_flight/src/views/flight_view.dart';
 import 'package:roc_flight/src/views/history_view.dart';
 import 'package:roc_flight/src/views/home.dart';
 import 'package:roc_flight/src/views/live_data_view.dart';
+import 'package:provider/provider.dart';
+import 'package:roc_flight/src/viewmodel/location_view_model.dart';
 
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
@@ -53,9 +55,11 @@ class MyApp extends StatelessWidget {
   final bool _transparentStatusBar = true;
   final FlexTabBarStyle _tabBarForAppBar = FlexTabBarStyle.forAppBar;
   final bool _tooltipsMatchBackground = true;
-  final VisualDensity _visualDensity = FlexColorScheme.comfortablePlatformDensity;
+  final VisualDensity _visualDensity =
+      FlexColorScheme.comfortablePlatformDensity;
   final TargetPlatform _platform = defaultTargetPlatform;
-  final FlexSurfaceMode _surfaceMode = FlexSurfaceMode.highBackgroundLowScaffold;
+  final FlexSurfaceMode _surfaceMode =
+      FlexSurfaceMode.highBackgroundLowScaffold;
   final int _blendLevel = 15;
 
   final FlexSubThemesData _subThemesData = const FlexSubThemesData(
@@ -112,7 +116,8 @@ class MyApp extends StatelessWidget {
           //
           // The appTitle is defined in .arb files found in the localization
           // directory.
-          onGenerateTitle: (BuildContext context) => AppLocalizations.of(context)!.appTitle,
+          onGenerateTitle: (BuildContext context) =>
+              AppLocalizations.of(context)!.appTitle,
 
           theme: FlexThemeData.light(
             colors: _useScheme ? null : _schemeLight,
@@ -178,7 +183,10 @@ class MyApp extends StatelessWidget {
                   case HistoryView.routeName:
                     return const HistoryView();
                   case FindView.routeName:
-                    return const FindView();
+                    return ChangeNotifierProvider<LocationViewModel>(
+                      create: (context) => LocationViewModel(),
+                      child: const FindView(),
+                    );
                   case LiveDataView.routeName:
                   default:
                     return const FlightView();
