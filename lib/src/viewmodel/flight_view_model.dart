@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class FlightViewModel extends ChangeNotifier {
   CollectionReference collection = FirebaseFirestore.instance.collection('flights');
@@ -72,6 +73,7 @@ class FlightViewModel extends ChangeNotifier {
   }
 
   bool connectToFlightByCode(String code) {
+    print("Connecting to flight with code: $code");
     code = code.substring(0, code.length.clamp(0, 6)).toUpperCase();
 
     collection
@@ -81,10 +83,15 @@ class FlightViewModel extends ChangeNotifier {
       .get()
       .then((snapshot) {
         flight = (snapshot.size > 0) ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data()) : null;
+        if(flight != null){ //Connected to flight
+          print("Connected to flight with code: $code");
+          _listenToFlightUpdates(flight?.uniqueId);
+          notifyListeners();
+          return true;
+        }
+        //Flight not found
+        Fluttertoast.showToast(msg: "Flight not found", toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM, timeInSecForIosWeb: 1, backgroundColor: Colors.grey, textColor: Colors.white, fontSize: 16.0);
         
-        _listenToFlightUpdates(flight?.uniqueId);
-
-        notifyListeners();
       })
       .catchError((error) { print(error); });
 
