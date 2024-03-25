@@ -1,59 +1,48 @@
+import 'dart:convert';
+
 class Rocket {
-  int? rocketID;
+  String? rocketID;
   int? altitude;
   Geopoint? coordinates;
-  Axis? acceleration;
-  Axis? gyroscope;
-  Axis? velocity;
+  Vector3? acceleration;
+  Vector3? gyroscope;
+  Vector3? velocity;
 
-  Rocket(
-      {this.rocketID,
-      this.altitude,
-      this.coordinates,
-      this.acceleration,
-      this.gyroscope,
-      this.velocity});
+  Rocket({this.rocketID, this.altitude, this.coordinates, this.acceleration, this.gyroscope, this.velocity});
 
   Rocket.fromJson(Map<String, dynamic> json) {
     rocketID = json['rocketID'];
     altitude = json['altitude'];
-    coordinates = json['coordinates'] != null
-        ? new Geopoint.fromJson(json['Geopoint'])
-        : null;
-    acceleration = json['acceleration'] != null
-        ? new Axis.fromJson(json['acceleration'])
-        : null;
-    gyroscope = json['gyroscope'] != null
-        ? new Axis.fromJson(json['gyroscope'])
-        : null;
-    velocity = json['velocity'] != null
-        ? new Axis.fromJson(json['velocity'])
-        : null;
+    coordinates = json['coordinates'] != null ? Geopoint.fromJson(json['Geopoint']) : null;
+    acceleration = json['acceleration'] != null ? Vector3.fromMap(json['acceleration']) : null;
+    gyroscope = json['gyroscope'] != null ? Vector3.fromMap(json['gyroscope']) : null;
+    velocity = json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['rocketID'] = this.rocketID;
-    data['altitude'] = this.altitude;
-    if (this.coordinates != null) {
-      data['coordinates'] = this.coordinates!.toJson();
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['rocketID'] = rocketID;
+    data['altitude'] = altitude;
+    if (coordinates != null) {
+      data['coordinates'] = coordinates!.toJson();
     }
-    if (this.acceleration != null) {
-      data['acceleration'] = this.acceleration!.toJson();
+    if (acceleration != null) {
+      data['acceleration'] = acceleration!.toMap();
     }
-    if (this.gyroscope != null) {
-      data['gyroscope'] = this.gyroscope!.toJson();
+    if (gyroscope != null) {
+      data['gyroscope'] = gyroscope!.toMap();
     }
-    if (this.velocity != null) {
-      data['velocity'] = this.velocity!.toJson();
+    if (velocity != null) {
+      data['velocity'] = velocity!.toMap();
     }
+
     return data;
   }
 }
 
 class Geopoint {
-  int? latitude;
-  int? longitude;
+  double? latitude;
+  double? longitude;
 
   Geopoint({this.latitude, this.longitude});
 
@@ -63,31 +52,35 @@ class Geopoint {
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['latitude'] = this.latitude;
-    data['longitude'] = this.longitude;
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['latitude'] = latitude;
+    data['longitude'] = longitude;
     return data;
   }
 }
 
-class Axis {
-  int? x;
-  int? y;
-  int? z;
+class Vector3 {
+  double x;
+  double y;
+  double z;
 
-  Axis({this.x, this.y, this.z});
+  Vector3(this.x, this.y, this.z);
 
-  Axis.fromJson(Map<String, dynamic> json) {
-    x = json['x'];
-    y = json['y'];
-    z = json['z'];
+  // Convert a Vector3 instance to a map
+  Map<String, dynamic> toMap() {
+    return {
+      'x': x,
+      'y': y,
+      'z': z,
+    };
   }
 
-  Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = new Map<String, dynamic>();
-    data['x'] = this.x;
-    data['y'] = this.y;
-    data['z'] = this.z;
-    return data;
+  // Convert a map to a Vector3 instance
+  static Vector3 fromMap(Map<String, dynamic> map) {
+    return Vector3(
+      map['x'],
+      map['y'],
+      map['z'],
+    );
   }
 }

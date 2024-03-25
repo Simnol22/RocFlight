@@ -17,14 +17,12 @@ class LocationViewModel extends ChangeNotifier {
 
   // Create a placeholder Rocket instance
   Rocket placeholderRocket = Rocket(
-    rocketId: 'placeholder_rocket_id', // Placeholder ID
-    latitude: 45.5017, // Placeholder latitude (e.g., Montreal)
-    longitude: -73.5673, // Placeholder longitude (e.g., Montreal)
+    rocketID: 'placeholder_rocket_id', // Placeholder ID
+    coordinates: Geopoint(latitude: 45.5017, longitude: -73.5673), // Placeholder location (e.g., Montreal)
   );
 
   Future<void> fetchUserLocation() async {
-    bool hasPermission =
-        await _locationService.checkAndRequestLocationPermissions();
+    bool hasPermission = await _locationService.checkAndRequestLocationPermissions();
     if (hasPermission) {
       try {
         Position position = await _locationService.getCurrentLocation();
@@ -44,14 +42,12 @@ class LocationViewModel extends ChangeNotifier {
     // Check if the rocketId is the placeholder ID
     if (rocketId == 'placeholder_rocket_id') {
       // Directly set the placeholder data without fetching from Firestore
-      _rocketLocation = const LatLng(
-          45.5017, -73.5673); // Using Montreal as the placeholder location
+      _rocketLocation = const LatLng(45.5017, -73.5673); // Using Montreal as the placeholder location
       notifyListeners();
     } else {
       // Proceed with the actual Firestore fetching logic
       try {
-        var docSnapshot =
-            await _firestore.collection('rockets').doc(rocketId).get();
+        var docSnapshot = await _firestore.collection('rockets').doc(rocketId).get();
         if (docSnapshot.exists) {
           Map<String, dynamic> data = docSnapshot.data()!;
           double latitude = data['latitude'];
