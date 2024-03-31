@@ -94,7 +94,7 @@ class FlightViewModel extends ChangeNotifier {
   }
 
   bool connectToFlightByCode(String code) {
-    print("Connecting to flight with code: ");
+    print("Connecting to flight with code: $code");
     code = code.substring(0, code.length.clamp(0, 6)).toUpperCase();
 
     collection
