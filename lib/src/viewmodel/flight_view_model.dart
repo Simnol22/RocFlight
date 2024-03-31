@@ -2,17 +2,26 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:roc_flight/src/storage_service.dart';
+import 'package:uuid/uuid.dart';
 
 class FlightViewModel extends ChangeNotifier {
+  final StorageService _storageService = StorageService();
   CollectionReference collection = FirebaseFirestore.instance.collection('flights');
   // Represent the current active flight (regardless of the user mode)
   Flight? flight;
-
+  String launcherUid = '';
   void createFlight() {
+    fetchlauncherUid().then((value){
+      launcherUid = value;
+      if (launcherUid.isEmpty) {
+        throw Exception('Error setting launcherUid');
+      }
+    }); 
     Flight entry = Flight(
       createdAt: DateTime.now(),
       status: FlightStatus.created,
-      launcherId: 'users/ltKvmB5neCT5a2BPC8rO', // TODO should be the current user
+      launcherId: launcherUid,
       operatorIds: []
     );
 
@@ -72,8 +81,20 @@ class FlightViewModel extends ChangeNotifier {
     }
   }
 
+  Future<String> fetchlauncherUid() async {
+    final userId = await _storageService.getUserId();
+    if (userId.isEmpty) {
+      var uuid = Uuid();
+      var randomId = uuid.v1();
+      await _storageService.setUserId(randomId);
+      print("No userID, creating random one: $randomId");
+      return randomId;
+    }
+    return userId;
+  }
+
   bool connectToFlightByCode(String code) {
-    print("Connecting to flight with code: $code");
+    print("Connecting to flight with code: ");
     code = code.substring(0, code.length.clamp(0, 6)).toUpperCase();
 
     collection
