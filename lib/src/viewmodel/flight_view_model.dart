@@ -6,6 +6,7 @@ import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/storage_service.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:uuid/uuid.dart';
+import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
@@ -18,6 +19,8 @@ class FlightViewModel extends ChangeNotifier {
   Flight? get currentFlight => flight;
 
   String launcherUid = '';
+  RocketViewModel? rocketViewModel;
+  bool isFlightStarted = false;
   void createFlight() {
     fetchlauncherUid().then((value) {
       launcherUid = value;
@@ -49,13 +52,16 @@ class FlightViewModel extends ChangeNotifier {
   }
 
   void startFlight() {
+    rocketViewModel = RocketViewModel();
     if (flight != null) {
       flight?.status = FlightStatus.started;
-
       collection
           .doc(flight?.uniqueId)
           .set(flight?.toFirestoreMap(), SetOptions(merge: true))
           .then((value) => notifyListeners());
+    }
+    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
+      print("flight running");
     }
   }
 
@@ -71,6 +77,7 @@ class FlightViewModel extends ChangeNotifier {
         notifyListeners();
       });
     }
+    print("Ending flight");
   }
 
   void _listenToFlightUpdates(String? documentId) {
