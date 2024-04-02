@@ -13,36 +13,36 @@ class LiveDataView extends StatelessWidget {
       builder: (context, liveDataViewModel, child) {
         return ListView(
           children: [
-            _buildConnectionHeader(liveDataViewModel),
+            _buildConnectionHeader(liveDataViewModel.mockIsConnected),
             const SizedBox(height: 16),
-            _buildRocketStatusHeader(liveDataViewModel),
+            _buildRocketStatusHeader(liveDataViewModel.mockRocketStatus),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildCurrentAltitudeHeader(liveDataViewModel),
+            _buildCurrentAltitudeHeader(liveDataViewModel.mockCurrentAltitude),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildApogeeHeader(liveDataViewModel),
+            _buildApogeeHeader(liveDataViewModel.mockApogeeAltitude),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildCurrentVelocityHeader(liveDataViewModel),
+            _buildCurrentVelocityHeader(liveDataViewModel.mockCurrentVelocity),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildMaxVelocityHeader(liveDataViewModel),
+            _buildMaxVelocityHeader(liveDataViewModel.mockMaxVelocity),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildCurrentAccelerationHeader(liveDataViewModel),
+            _buildCurrentAccelerationHeader(liveDataViewModel.mockCurrentAcceleration),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildMaxAccelerationHeader(liveDataViewModel),
+            _buildMaxAccelerationHeader(liveDataViewModel.mockMaxAcceleration),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildCurrentRollHeader(liveDataViewModel),
+            _buildCurrentRollHeader(liveDataViewModel.mockCurrentRollRate),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildMaxRollHeader(liveDataViewModel),
+            _buildMaxRollHeader(liveDataViewModel.mockMaxRollRate),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
-            _buildBatteryHeader(liveDataViewModel),
+            _buildBatteryHeader(liveDataViewModel.mockBatteryLevel),
             const Divider(color: Colors.black, height: 1),
             const SizedBox(height: 16),
           ],
@@ -51,7 +51,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildBatteryHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildBatteryHeader(int batteryLevel) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -65,7 +65,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockMaxRollRate} %',
+            '$batteryLevel %',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -76,7 +76,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildMaxRollHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildMaxRollHeader(double maxRollRate) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -90,7 +90,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockMaxRollRate} °/s',
+            '$maxRollRate °/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -101,7 +101,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildCurrentRollHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildCurrentRollHeader(double currentRollRate) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -115,7 +115,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockCurrentRollRate} °/s',
+            '$currentRollRate °/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -126,7 +126,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildMaxAccelerationHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildMaxAccelerationHeader(double maxAcceleration) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -140,7 +140,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockMaxAcceleration} m/s²',
+            '$maxAcceleration m/s²',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -151,7 +151,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildCurrentAccelerationHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildCurrentAccelerationHeader(double currentAcceleration) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -165,7 +165,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockCurrentAcceleration} m/s²',
+            '$currentAcceleration m/s²',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -176,7 +176,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildMaxVelocityHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildMaxVelocityHeader(double maxVelocity) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -190,7 +190,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockMaxVelocity} m/s',
+            '$maxVelocity m/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -201,7 +201,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildCurrentVelocityHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildCurrentVelocityHeader(double currentVelocity) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -215,7 +215,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockCurrentVelocity} m/s',
+            '$currentVelocity m/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -226,7 +226,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildApogeeHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildApogeeHeader(double apogeeAltitude) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -240,7 +240,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockApogeeAltitude} m',
+            '$apogeeAltitude m',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -251,7 +251,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildCurrentAltitudeHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildCurrentAltitudeHeader(double currentAltitude) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -265,7 +265,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockCurrentAltitude} m',
+            '$currentAltitude m',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -276,7 +276,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Container _buildRocketStatusHeader(LiveDataViewModel liveDataViewModel) {
+  Container _buildRocketStatusHeader(String rocketStatus) {
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       child: Row(
@@ -290,7 +290,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockRocketStatus,
+            rocketStatus,
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -301,7 +301,7 @@ class LiveDataView extends StatelessWidget {
     );
   }
 
-  Row _buildConnectionHeader(LiveDataViewModel liveDataViewModel) {
+  Row _buildConnectionHeader(bool isConnected) {
     return Row(
       children: [
         const Expanded(
@@ -337,7 +337,7 @@ class LiveDataView extends StatelessWidget {
                     height: 24,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: liveDataViewModel.mockIsConnected ? Colors.green : Colors.red,
+                      color: isConnected ? Colors.green : Colors.red,
                     ),
                   ),
                 ],
