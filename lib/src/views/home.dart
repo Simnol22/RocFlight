@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
+import 'package:roc_flight/src/viewmodel/live_data_view_model.dart';
 import 'package:roc_flight/src/views/find_view.dart';
 import 'package:roc_flight/src/views/flight_view.dart';
 import 'package:roc_flight/src/views/history_view.dart';
@@ -31,8 +33,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     bool? askedBefore = prefs.getBool('askedForLocationPermission');
 
     if (askedBefore != true) {
-      bool hasPermission =
-          await LocationService().checkAndRequestLocationPermissions();
+      bool hasPermission = await LocationService().checkAndRequestLocationPermissions();
       await prefs.setBool('askedForLocationPermission', true);
 
       if (!hasPermission) {
@@ -44,9 +45,15 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _getCurrentPage() {
     switch (_currentIndex) {
       case 0:
-        return const FlightView();
+        return ChangeNotifierProvider<FlightViewModel>(
+          create: (_) => FlightViewModel(),
+          child: const FlightView(),
+        );
       case 1:
-        return const LiveDataView();
+        return ChangeNotifierProvider<LiveDataViewModel>(
+          create: (context) => LiveDataViewModel(context),
+          child: const LiveDataView(),
+        );
       case 2:
         return ChangeNotifierProvider<LocationViewModel>(
           create: (_) => LocationViewModel(),
