@@ -65,7 +65,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            '${liveDataViewModel.mockMaxRollRate}%',
+            '${liveDataViewModel.mockMaxRollRate} %',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -90,7 +90,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockMaxRollRate.toString(),
+            '${liveDataViewModel.mockMaxRollRate} °/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -115,7 +115,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockCurrentRollRate.toString(),
+            '${liveDataViewModel.mockCurrentRollRate} °/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -140,7 +140,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockMaxAcceleration.toString(),
+            '${liveDataViewModel.mockMaxAcceleration} m/s²',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -165,7 +165,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockCurrentAcceleration.toString(),
+            '${liveDataViewModel.mockCurrentAcceleration} m/s²',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -190,7 +190,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockMaxVelocity.toString(),
+            '${liveDataViewModel.mockMaxVelocity} m/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -215,7 +215,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockCurrentVelocity.toString(),
+            '${liveDataViewModel.mockCurrentVelocity} m/s',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -240,7 +240,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockApogeeAltitude.toString(),
+            '${liveDataViewModel.mockApogeeAltitude} m',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
@@ -265,7 +265,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
           Text(
-            liveDataViewModel.mockCurrentAltitude.toString(),
+            '${liveDataViewModel.mockCurrentAltitude} m',
             style: const TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
