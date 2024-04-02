@@ -63,6 +63,9 @@ class FlightViewModel extends ChangeNotifier {
     while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
       print("flight running");
     }
+    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
+      print("flight running");
+    }
   }
 
   void endFlight() {
