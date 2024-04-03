@@ -183,10 +183,7 @@ class MyApp extends StatelessWidget {
                   case HistoryView.routeName:
                     return const HistoryView();
                   case FindView.routeName:
-                    return ChangeNotifierProvider<LocationViewModel>(
-                      create: (context) => LocationViewModel(),
-                      child: const FindView(),
-                    );
+                    return const FindView();
                   case LiveDataView.routeName:
                   default:
                     return const FlightView();
