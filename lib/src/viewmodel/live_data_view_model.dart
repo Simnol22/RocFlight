@@ -1,10 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
-import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 
 class LiveDataViewModel extends ChangeNotifier {
@@ -13,7 +10,8 @@ class LiveDataViewModel extends ChangeNotifier {
   LiveDataViewModel(this.context);
 
   Flight? getFlight() {
-    FlightViewModel flightViewModel = Provider.of<FlightViewModel>(context, listen: false);
+    FlightViewModel flightViewModel =
+        Provider.of<FlightViewModel>(context, listen: false);
     return flightViewModel.flight;
   }
 

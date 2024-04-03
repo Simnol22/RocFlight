@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 class Rocket {
   String? rocketID;
   int? altitude;
@@ -8,15 +6,27 @@ class Rocket {
   Vector3? gyroscope;
   Vector3? velocity;
 
-  Rocket({this.rocketID, this.altitude, this.coordinates, this.acceleration, this.gyroscope, this.velocity});
+  Rocket(
+      {this.rocketID,
+      this.altitude,
+      this.coordinates,
+      this.acceleration,
+      this.gyroscope,
+      this.velocity});
 
   Rocket.fromJson(Map<String, dynamic> json) {
     rocketID = json['rocketID'];
     altitude = json['altitude'];
-    coordinates = json['coordinates'] != null ? Geopoint.fromJson(json['Geopoint']) : null;
-    acceleration = json['acceleration'] != null ? Vector3.fromMap(json['acceleration']) : null;
-    gyroscope = json['gyroscope'] != null ? Vector3.fromMap(json['gyroscope']) : null;
-    velocity = json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
+    coordinates = json['coordinates'] != null
+        ? Geopoint.fromJson(json['Geopoint'])
+        : null;
+    acceleration = json['acceleration'] != null
+        ? Vector3.fromMap(json['acceleration'])
+        : null;
+    gyroscope =
+        json['gyroscope'] != null ? Vector3.fromMap(json['gyroscope']) : null;
+    velocity =
+        json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
   }
 
   Map<String, dynamic> toJson() {
