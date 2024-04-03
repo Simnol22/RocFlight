@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:roc_flight/src/model/flight.dart';
+import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 
 enum FlightMode { operator, launcher }
+
 enum ConnectionStatus { connected, disconnected, pending }
 
 Widget _buildStatusIndicator(Flight? flight) {
@@ -21,7 +24,7 @@ Widget _buildStatusIndicator(Flight? flight) {
       status = ConnectionStatus.pending;
     }
 
-    mode = flight.amILauncher ? FlightMode.launcher : FlightMode.operator; 
+    mode = flight.amILauncher ? FlightMode.launcher : FlightMode.operator;
   }
 
   switch (status) {
@@ -37,29 +40,27 @@ Widget _buildStatusIndicator(Flight? flight) {
   }
 
   return CustomCard(
-    title: "Status",
-    children: Column(
-      children: [
-        Row(
-          children: [
-            Container(
-              width: 10,
-              height: 10,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: color,
-              )
-            ),
-            const SizedBox(width: 5),
-            Text(
-              '${status.toString().split('.').last.toUpperCase()} ${mode == null ? '' : 'AS ${mode.toString().split('.').last.toUpperCase()}'}',
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
-      ],
-    )
-  );
+      title: "Status",
+      children: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                  width: 10,
+                  height: 10,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: color,
+                  )),
+              const SizedBox(width: 5),
+              Text(
+                '${status.toString().split('.').last.toUpperCase()} ${mode == null ? '' : 'AS ${mode.toString().split('.').last.toUpperCase()}'}',
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ],
+      ));
 }
 
 class FlightView extends StatefulWidget {
@@ -75,7 +76,9 @@ class FlightViewState extends State<FlightView> {
   FlightMode? _selectedFlightMode = FlightMode.operator;
 
   void _onFlightModeChanged(FlightMode? mode) {
-    setState(() { _selectedFlightMode = mode; });
+    setState(() {
+      _selectedFlightMode = mode;
+    });
   }
 
   @override
@@ -89,7 +92,7 @@ class FlightViewState extends State<FlightView> {
             style: const TextStyle(color: Colors.lightGreen),
             items: const [
               DropdownMenuItem(
-                value: FlightMode.operator, 
+                value: FlightMode.operator,
                 child: Text('Operator Mode'),
               ),
               DropdownMenuItem(value: FlightMode.launcher, child: Text('Launcher Mode')),
@@ -149,83 +152,137 @@ class _LauncherModeWidget extends StatefulWidget {
 }
 
 class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
-
   bool _hasActiveFlight() {
-    return (widget.flight?.isActive??false);
+    return (widget.flight?.isActive ?? false);
   }
 
   bool _hasStartedFlight() {
-    return (!_hasActiveFlight()) || (widget.flight?.iStarted??false);
+    return (!_hasActiveFlight()) || (widget.flight?.iStarted ?? false);
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        _buildStatusIndicator(widget.flight),
-        
-        CustomCard(
-          title: "Flight code",
-          children: Column(
-            children: [
-              Text(
-                widget.flight?.flightCode??"NO CODE",
+    SensorService sensorService = SensorService();
+    return Column(children: [
+      _buildStatusIndicator(widget.flight),
+      CustomCard(
+        title: "Flight code",
+        children: Column(
+          children: [
+            Text(widget.flight?.flightCode ?? "NO CODE",
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.secondary,
-                  fontWeight: FontWeight.w800, 
-                  fontSize: 18
-                )
-              ),
-              
-              const SizedBox(height: 8),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _hasActiveFlight() ? null : () => { widget.onCreateFlightPressed() },
-                  style: ElevatedButton.styleFrom(
-                    disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  ),
-                  child: const Text('Create flight'),
+                    color: Theme.of(context).colorScheme.secondary, fontWeight: FontWeight.w800, fontSize: 18)),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _hasActiveFlight() ? null : () => {widget.onCreateFlightPressed()},
+                style: ElevatedButton.styleFrom(
+                  disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 ),
+                child: const Text('Create flight'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-        CustomCard(
-          title: "Controls",
-          children: Column(
-            children: [
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _hasStartedFlight() ? null : () => { widget.onStartFlightPressed() },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.red,
-                    disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                    minimumSize: const Size(double.infinity, 60),
-                  ),
-                  child: const Text('Start flight'),
+      ),
+      CustomCard(
+        title: "Controls",
+        children: Column(
+          children: [
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _hasStartedFlight() ? null : () => {widget.onStartFlightPressed()},
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                  minimumSize: const Size(double.infinity, 60),
                 ),
+                child: const Text('Start flight'),
               ),
-
-              const SizedBox(height: 8),
-
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: !_hasActiveFlight() ? null : () => { widget.onEndFlightPressed() },
-                  style: ElevatedButton.styleFrom(
-                    disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
-                  ),
-                  child: const Text('End flight'),
+            ),
+            const SizedBox(height: 8),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: !_hasActiveFlight() ? null : () => {widget.onEndFlightPressed()},
+                style: ElevatedButton.styleFrom(
+                  disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 ),
+                child: const Text('End flight'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
-      ]
-    );
+      ),
+      CustomCard(
+        title: "Accelerometer",
+        children: StreamBuilder<AccelerometerEvent>(
+          stream: sensorService.getAccelerometerStream(),
+          builder: (BuildContext context, AsyncSnapshot<AccelerometerEvent> snapshot) {
+            if (snapshot.hasData) {
+              AccelerometerEvent? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('x:${event?.x.toStringAsFixed(2)}'),
+                    Text('y:${event?.y.toStringAsFixed(2)}'),
+                    Text('z:${event?.z.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      ),
+      CustomCard(
+        title: "Gyroscope",
+        children: StreamBuilder<GyroscopeEvent>(
+          stream: sensorService.getGyroscopeStream(),
+          builder: (BuildContext context, AsyncSnapshot<GyroscopeEvent> snapshot) {
+            if (snapshot.hasData) {
+              GyroscopeEvent? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('x:${event?.x.toStringAsFixed(2)}'),
+                    Text('y:${event?.y.toStringAsFixed(2)}'),
+                    Text('z:${event?.z.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      ),
+      CustomCard(
+        title: "Magnometer",
+        children: StreamBuilder<MagnetometerEvent>(
+          stream: sensorService.getMagnometerStream(),
+          builder: (BuildContext context, AsyncSnapshot<MagnetometerEvent> snapshot) {
+            if (snapshot.hasData) {
+              MagnetometerEvent? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('x:${event?.x.toStringAsFixed(2)}'),
+                    Text('y:${event?.y.toStringAsFixed(2)}'),
+                    Text('z:${event?.z.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      )
+    ]);
   }
 }
 
@@ -247,11 +304,11 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
   late String flightCode = "";
 
   bool _hasActiveFlight() {
-    return (widget.flight?.isActive??false);
+    return (widget.flight?.isActive ?? false);
   }
 
   void _onTryConnectToFlight() {
-    widget.onConnectPressed(flightCode); 
+    widget.onConnectPressed(flightCode);
   }
 
   @override
@@ -259,26 +316,26 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
     return Column(
       children: [
         _buildStatusIndicator(widget.flight),
-
         CustomCard(
           title: "Enter flight code",
           children: Column(
             children: [
               TextField(
                 enabled: !_hasActiveFlight(),
-                onChanged: (value) { setState(() { flightCode = value; }); },
-                inputFormatters: [ LengthLimitingTextInputFormatter(6) ],
+                onChanged: (value) {
+                  setState(() {
+                    flightCode = value;
+                  });
+                },
+                inputFormatters: [LengthLimitingTextInputFormatter(6)],
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration( labelText: 'Code' ),
+                decoration: const InputDecoration(labelText: 'Code'),
               ),
-
               const SizedBox(height: 8),
-
               SizedBox(
                 width: double.infinity,
-                
                 child: ElevatedButton(
-                  onPressed: _hasActiveFlight() ? null : () => { _onTryConnectToFlight() },
+                  onPressed: _hasActiveFlight() ? null : () => {_onTryConnectToFlight()},
                   style: ElevatedButton.styleFrom(
                     disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                   ),
