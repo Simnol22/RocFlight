@@ -2,7 +2,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/storage_service.dart';
+import 'package:sensors_plus/sensors_plus.dart';
 import 'package:uuid/uuid.dart';
 
 class FlightViewModel extends ChangeNotifier {
@@ -23,6 +25,7 @@ class FlightViewModel extends ChangeNotifier {
         throw Exception('Error setting launcherUid');
       }
     });
+
     Flight entry = Flight(
         createdAt: DateTime.now(),
         status: FlightStatus.created,
