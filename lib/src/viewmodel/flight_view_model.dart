@@ -50,8 +50,11 @@ class FlightViewModel extends ChangeNotifier {
           .then((value) {
         flight = entry;
         notifyListeners();
+        //----------------------------------------------------------
+        //This is only for test. Creates the rocketviewModel and add entry to firestore.
         print("testing rocket creation");
         createRocket();
+        //----------------------------------------------------------
       });
     }).catchError((error) {
       print(error);
