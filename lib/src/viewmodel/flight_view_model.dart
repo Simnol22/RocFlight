@@ -125,6 +125,7 @@ class FlightViewModel extends ChangeNotifier {
           backgroundColor: Colors.grey,
           textColor: Colors.white,
           fontSize: 16.0);
+      // ignore: body_might_complete_normally_catch_error
     }).catchError((error) {
       print(error);
     });
