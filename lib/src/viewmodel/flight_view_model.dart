@@ -21,15 +21,20 @@ class FlightViewModel extends ChangeNotifier {
   String launcherUid = '';
   RocketViewModel? rocketViewModel;
   bool isFlightStarted = false;
+    
+  void createRocket(){
+    rocketViewModel = RocketViewModel();
+    rocketViewModel?.setupRocket(flight!);
+  }
+
   void createFlight() {
-    fetchlauncherUid().then((value) {
-      launcherUid = value;
-      if (launcherUid.isEmpty) {
+    fetchlauncherUid().then((uid) {
+      launcherUid = uid;
+      if (launcherUid == '') {
         throw Exception('Error setting launcherUid');
       }
-    });
-
-    Flight entry = Flight(
+      print("Creating flight with launcherUid: $launcherUid");
+      Flight entry = Flight(
         createdAt: DateTime.now(),
         status: FlightStatus.created,
         launcherId: launcherUid,
@@ -45,9 +50,12 @@ class FlightViewModel extends ChangeNotifier {
           .then((value) {
         flight = entry;
         notifyListeners();
+        print("testing rocket creation");
+        createRocket();
       });
     }).catchError((error) {
       print(error);
+    });
     });
   }
 
