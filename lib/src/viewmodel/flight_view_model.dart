@@ -7,39 +7,42 @@ import 'package:uuid/uuid.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
-  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
+  CollectionReference collection =
+      FirebaseFirestore.instance.collection('flights');
   // Represent the current active flight (regardless of the user mode)
   Flight? flight;
+
+  // Get the current flight
+  Flight? get currentFlight => flight;
+
   String launcherUid = '';
   void createFlight() {
-    fetchlauncherUid().then((value){
+    fetchlauncherUid().then((value) {
       launcherUid = value;
       if (launcherUid.isEmpty) {
         throw Exception('Error setting launcherUid');
       }
-    }); 
+    });
     Flight entry = Flight(
-      createdAt: DateTime.now(),
-      status: FlightStatus.created,
-      launcherId: launcherUid,
-      operatorIds: []
-    );
+        createdAt: DateTime.now(),
+        status: FlightStatus.created,
+        launcherId: launcherUid,
+        operatorIds: []);
 
-    collection
-      .add(entry.toFirestoreMap())
-      .then((value) { 
-        entry.uniqueId = value.id;
-        entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
+    collection.add(entry.toFirestoreMap()).then((value) {
+      entry.uniqueId = value.id;
+      entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
 
-        collection
+      collection
           .doc(entry.uniqueId)
           .set(entry.toFirestoreMap(), SetOptions(merge: true))
           .then((value) {
-            flight = entry;
-            notifyListeners();
-          });
-      })
-      .catchError((error) { print(error); });
+        flight = entry;
+        notifyListeners();
+      });
+    }).catchError((error) {
+      print(error);
+    });
   }
 
   void startFlight() {
@@ -47,9 +50,9 @@ class FlightViewModel extends ChangeNotifier {
       flight?.status = FlightStatus.started;
 
       collection
-        .doc(flight?.uniqueId)
-        .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-        .then((value) => notifyListeners());
+          .doc(flight?.uniqueId)
+          .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+          .then((value) => notifyListeners());
     }
   }
 
@@ -58,17 +61,17 @@ class FlightViewModel extends ChangeNotifier {
       flight?.status = FlightStatus.ended;
 
       collection
-        .doc(flight?.uniqueId)
-        .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-        .then((value) {
-          flight = null;
-          notifyListeners();
-        });
+          .doc(flight?.uniqueId)
+          .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+          .then((value) {
+        flight = null;
+        notifyListeners();
+      });
     }
   }
 
   void _listenToFlightUpdates(String? documentId) {
-    if (documentId?.isNotEmpty??false) {
+    if (documentId?.isNotEmpty ?? false) {
       final ref = collection.doc(documentId);
 
       ref.snapshots().listen(
@@ -98,23 +101,33 @@ class FlightViewModel extends ChangeNotifier {
     code = code.substring(0, code.length.clamp(0, 6)).toUpperCase();
 
     collection
-      .where('code', isEqualTo: code)
-      .where('status', isNotEqualTo: FlightStatus.ongoing.index)
-      .limit(1)
-      .get()
-      .then((snapshot) {
-        flight = (snapshot.size > 0) ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data()) : null;
-        if(flight != null){ //Connected to flight
-          print("Connected to flight with code: $code");
-          _listenToFlightUpdates(flight?.uniqueId);
-          notifyListeners();
-          return true;
-        }
-        //Flight not found
-        Fluttertoast.showToast(msg: "Flight not found", toastLength: Toast.LENGTH_SHORT, gravity: ToastGravity.BOTTOM, timeInSecForIosWeb: 1, backgroundColor: Colors.grey, textColor: Colors.white, fontSize: 16.0);
-        
-      })
-      .catchError((error) { print(error); });
+        .where('code', isEqualTo: code)
+        .where('status', isNotEqualTo: FlightStatus.ongoing.index)
+        .limit(1)
+        .get()
+        .then((snapshot) {
+      flight = (snapshot.size > 0)
+          ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+          : null;
+      if (flight != null) {
+        //Connected to flight
+        print("Connected to flight with code: $code");
+        _listenToFlightUpdates(flight?.uniqueId);
+        notifyListeners();
+        return true;
+      }
+      //Flight not found
+      Fluttertoast.showToast(
+          msg: "Flight not found",
+          toastLength: Toast.LENGTH_SHORT,
+          gravity: ToastGravity.BOTTOM,
+          timeInSecForIosWeb: 1,
+          backgroundColor: Colors.grey,
+          textColor: Colors.white,
+          fontSize: 16.0);
+    }).catchError((error) {
+      print(error);
+    });
 
     return false;
   }

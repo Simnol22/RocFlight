@@ -20,7 +20,7 @@ class _FindViewState extends State<FindView> {
       final locationViewModel =
           Provider.of<LocationViewModel>(context, listen: false);
       locationViewModel.fetchUserLocation();
-      locationViewModel.fetchRocketLocation('placeholder_rocket_id');
+      locationViewModel.fetchLatestRocketLocation();
     });
   }
 
