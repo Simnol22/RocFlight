@@ -26,11 +26,9 @@ class StorageService {
   /// Gets the user ID if it has been previously set
   Future<String> getUserId() async {
     try{
-      print("in get user id");
       final path = await _localPath;
       File uidFile = File('$path/uid.txt');
       final contents = await uidFile.readAsString();
-      
       return contents;
     } catch (e) {
       return '';
