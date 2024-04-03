@@ -9,9 +9,14 @@ import 'package:uuid/uuid.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
-  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
+  CollectionReference collection =
+      FirebaseFirestore.instance.collection('flights');
   // Represent the current active flight (regardless of the user mode)
   Flight? flight;
+
+  // Get the current flight
+  Flight? get currentFlight => flight;
+
   String launcherUid = '';
   void createFlight() {
     fetchlauncherUid().then((value) {
@@ -20,14 +25,21 @@ class FlightViewModel extends ChangeNotifier {
         throw Exception('Error setting launcherUid');
       }
     });
-    Flight entry =
-        Flight(createdAt: DateTime.now(), status: FlightStatus.created, launcherId: launcherUid, operatorIds: []);
+
+    Flight entry = Flight(
+        createdAt: DateTime.now(),
+        status: FlightStatus.created,
+        launcherId: launcherUid,
+        operatorIds: []);
 
     collection.add(entry.toFirestoreMap()).then((value) {
       entry.uniqueId = value.id;
       entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
 
-      collection.doc(entry.uniqueId).set(entry.toFirestoreMap(), SetOptions(merge: true)).then((value) {
+      collection
+          .doc(entry.uniqueId)
+          .set(entry.toFirestoreMap(), SetOptions(merge: true))
+          .then((value) {
         flight = entry;
         notifyListeners();
       });
@@ -51,7 +63,10 @@ class FlightViewModel extends ChangeNotifier {
     if (flight != null) {
       flight?.status = FlightStatus.ended;
 
-      collection.doc(flight?.uniqueId).set(flight?.toFirestoreMap(), SetOptions(merge: true)).then((value) {
+      collection
+          .doc(flight?.uniqueId)
+          .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+          .then((value) {
         flight = null;
         notifyListeners();
       });
@@ -94,7 +109,9 @@ class FlightViewModel extends ChangeNotifier {
         .limit(1)
         .get()
         .then((snapshot) {
-      flight = (snapshot.size > 0) ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data()) : null;
+      flight = (snapshot.size > 0)
+          ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+          : null;
       if (flight != null) {
         //Connected to flight
         print("Connected to flight with code: $code");
@@ -111,6 +128,7 @@ class FlightViewModel extends ChangeNotifier {
           backgroundColor: Colors.grey,
           textColor: Colors.white,
           fontSize: 16.0);
+      // ignore: body_might_complete_normally_catch_error
     }).catchError((error) {
       print(error);
     });

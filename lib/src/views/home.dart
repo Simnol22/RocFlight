@@ -33,7 +33,8 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     bool? askedBefore = prefs.getBool('askedForLocationPermission');
 
     if (askedBefore != true) {
-      bool hasPermission = await LocationService().checkAndRequestLocationPermissions();
+      bool hasPermission =
+          await LocationService().checkAndRequestLocationPermissions();
       await prefs.setBool('askedForLocationPermission', true);
 
       if (!hasPermission) {
@@ -45,9 +46,9 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget _getCurrentPage() {
     switch (_currentIndex) {
       case 0:
-        return ChangeNotifierProvider<FlightViewModel>(
-          create: (_) => FlightViewModel(),
-          child: const FlightView(),
+        // Use Provider.of or Consumer to access the existing FlightViewModel instance
+        return Consumer<FlightViewModel>(
+          builder: (context, flightViewModel, child) => const FlightView(),
         );
       case 1:
         return ChangeNotifierProvider<LiveDataViewModel>(
@@ -56,54 +57,62 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         );
       case 2:
         return ChangeNotifierProvider<LocationViewModel>(
-          create: (_) => LocationViewModel(),
+          create: (context) => LocationViewModel(
+              Provider.of<FlightViewModel>(context, listen: false)),
           child: const FindView(),
         );
       case 3:
         return const HistoryView();
       default:
-        return const FlightView();
+        return Consumer<FlightViewModel>(
+          builder: (context, flightViewModel, child) => const FlightView(),
+        );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('RocFlight'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.settings),
-            onPressed: () {
-              // Navigate to settings screen
-              Navigator.pushNamed(context, '/settings');
-            },
-          ),
-        ],
-      ),
-      body: _getCurrentPage(), // Dynamically get the current page
-      bottomNavigationBar: BottomNavigationBar(
-        type: BottomNavigationBarType.shifting,
-        onTap: onTabTapped,
-        currentIndex: _currentIndex,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(Icons.rocket_launch),
-            label: 'Flight',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.satellite_alt),
-            label: 'LiveData',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.map),
-            label: 'Find',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.timeline),
-            label: 'History',
-          ),
-        ],
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => FlightViewModel()),
+        // Add other global providers here if necessary
+      ],
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('RocFlight'),
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.settings),
+              onPressed: () {
+                Navigator.pushNamed(context, '/settings');
+              },
+            ),
+          ],
+        ),
+        body: _getCurrentPage(), // Dynamically get the current page
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.shifting,
+          onTap: onTabTapped,
+          currentIndex: _currentIndex,
+          items: const [
+            BottomNavigationBarItem(
+              icon: Icon(Icons.rocket_launch),
+              label: 'Flight',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.satellite_alt),
+              label: 'LiveData',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.map),
+              label: 'Find',
+            ),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.timeline),
+              label: 'History',
+            ),
+          ],
+        ),
       ),
     );
   }

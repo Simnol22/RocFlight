@@ -8,8 +8,6 @@ import 'package:roc_flight/src/views/flight_view.dart';
 import 'package:roc_flight/src/views/history_view.dart';
 import 'package:roc_flight/src/views/home.dart';
 import 'package:roc_flight/src/views/live_data_view.dart';
-import 'package:provider/provider.dart';
-import 'package:roc_flight/src/viewmodel/location_view_model.dart';
 
 import 'settings/settings_controller.dart';
 import 'settings/settings_view.dart';
@@ -183,10 +181,7 @@ class MyApp extends StatelessWidget {
                   case HistoryView.routeName:
                     return const HistoryView();
                   case FindView.routeName:
-                    return ChangeNotifierProvider<LocationViewModel>(
-                      create: (context) => LocationViewModel(),
-                      child: const FindView(),
-                    );
+                    return const FindView();
                   case LiveDataView.routeName:
                   default:
                     return const FlightView();
