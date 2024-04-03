@@ -19,7 +19,7 @@ class LiveDataViewModel extends ChangeNotifier {
     return true;
   }
 
-  String get mockRocketStatus {
+  String get  mockRocketStatus {
     return 'Launched';
   }
 

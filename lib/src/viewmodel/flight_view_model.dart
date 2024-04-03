@@ -6,6 +6,7 @@ import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/storage_service.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:uuid/uuid.dart';
+import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
@@ -18,15 +19,22 @@ class FlightViewModel extends ChangeNotifier {
   Flight? get currentFlight => flight;
 
   String launcherUid = '';
+  RocketViewModel? rocketViewModel;
+  bool isFlightStarted = false;
+    
+  void createRocket(){
+    rocketViewModel = RocketViewModel();
+    rocketViewModel?.setupRocket(flight!);
+  }
+
   void createFlight() {
-    fetchlauncherUid().then((value) {
-      launcherUid = value;
-      if (launcherUid.isEmpty) {
+    fetchlauncherUid().then((uid) {
+      launcherUid = uid;
+      if (launcherUid == '') {
         throw Exception('Error setting launcherUid');
       }
-    });
-
-    Flight entry = Flight(
+      print("Creating flight with launcherUid: $launcherUid");
+      Flight entry = Flight(
         createdAt: DateTime.now(),
         status: FlightStatus.created,
         launcherId: launcherUid,
@@ -42,20 +50,32 @@ class FlightViewModel extends ChangeNotifier {
           .then((value) {
         flight = entry;
         notifyListeners();
+        //----------------------------------------------------------
+        //This is only for test. Creates the rocketviewModel and add entry to firestore.
+        print("testing rocket creation");
+        createRocket();
+        //----------------------------------------------------------
       });
     }).catchError((error) {
       print(error);
     });
+    });
   }
 
   void startFlight() {
+    rocketViewModel = RocketViewModel();
     if (flight != null) {
       flight?.status = FlightStatus.started;
-
       collection
           .doc(flight?.uniqueId)
           .set(flight?.toFirestoreMap(), SetOptions(merge: true))
           .then((value) => notifyListeners());
+    }
+    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
+      print("flight running");
+    }
+    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
+      print("flight running");
     }
   }
 
@@ -71,6 +91,7 @@ class FlightViewModel extends ChangeNotifier {
         notifyListeners();
       });
     }
+    print("Ending flight");
   }
 
   void _listenToFlightUpdates(String? documentId) {
