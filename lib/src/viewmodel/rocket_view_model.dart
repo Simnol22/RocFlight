@@ -22,7 +22,7 @@ class RocketViewModel extends ChangeNotifier {
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
     rocket.coordinates= Geopoint(0.0,0.0);//For testing fetching location
-    saveDateToDB();
+    saveDataToDB();
   } 
   void sendData(){
     rocketCollection.add(rocket.toJson()).then((value) {
@@ -34,6 +34,8 @@ class RocketViewModel extends ChangeNotifier {
   void activateSensors(){
     print("activating sensors");
     SensorService sensorService = SensorService();
+    LocationService locationService = LocationService();
+    
     sensorService.getAccelerometerStream()?.listen((event) {
       rocket.acceleration = Vector3(event.x, event.y, event.z);
       rocket.timestamp = DateTime.now();
@@ -52,26 +54,31 @@ class RocketViewModel extends ChangeNotifier {
       lastPressTime = rocket.timestamp;
       lastAltitude = rocket.altitude;
     });
-    
+    //Make sure you 
+    locationService.checkAndRequestLocationPermissions().then((value) => 
+    locationService.getGPSStream()?.listen((event) {
+      rocket.coordinates = Geopoint(event.latitude, event.longitude);
+      rocket.altitudeGPS = event.altitude;
+    })
+
+    );
   }
   Stream<double> getAltitudeStream(){
     return Stream<double>.periodic(Duration(seconds: 1), (x) => rocket.altitude!);
   }
 
-  saveDateToDB(){
+  saveDataToDB(){
     Stream.periodic(Duration(seconds: 15)).listen((event) { 
       print("test");
-      sendData();
+      //sendData();
     });
   }
-  
+
   // Altitude calculated with magic RockÉTS formula (NOAA Formula)
   // (pressure changed from hPa to Pa)
   void calculateAltitude(double pressure){  
     var altitude = 44307.693 - 4942.781 * pow((pressure*100), 0.190284);
     rocket.altitude = altitude;
-    print("altitude !");
-    print(rocket.altitude);
   }
 
   // À VÉRIFIER SVP ! SUS ! 
