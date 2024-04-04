@@ -24,6 +24,7 @@ class FlightViewModel extends ChangeNotifier {
 
   // Get the current rocket
   RocketViewModel? get currentRocket => rocketViewModel;
+  String? get launcherId => launcherUid;
   
   void createRocket(){
     rocketViewModel = RocketViewModel();
