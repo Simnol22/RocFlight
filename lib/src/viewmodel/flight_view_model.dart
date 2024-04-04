@@ -58,18 +58,18 @@ class FlightViewModel extends ChangeNotifier {
       entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
 
       collection
-          .doc(entry.uniqueId)
-          .set(entry.toFirestoreMap(), SetOptions(merge: true))
-          .then((value) {
-        flight = entry;
-        notifyListeners();
-        //----------------------------------------------------------
-        //This is only for test. Creates the rocketviewModel and add entry to firestore.
-        print("testing rocket creation");
-        createRocket();
-        sendData();
-        //----------------------------------------------------------
-      });
+        .doc(entry.uniqueId)
+        .set(entry.toFirestoreMap(), SetOptions(merge: true))
+        .then((value) {
+          flight = entry;
+          notifyListeners();
+          //----------------------------------------------------------
+          //This is only for test. Creates the rocketviewModel and add entry to firestore.
+          print("testing rocket creation");
+          createRocket();
+          sendData();
+          //----------------------------------------------------------
+        });
     }).catchError((error) {
       print(error);
     });
@@ -94,12 +94,12 @@ class FlightViewModel extends ChangeNotifier {
       flight?.status = FlightStatus.ended;
 
       collection
-          .doc(flight?.uniqueId)
-          .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-          .then((value) {
-        flight = null;
-        notifyListeners();
-      });
+        .doc(flight?.uniqueId)
+        .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+        .then((value) {
+          flight = null;
+          notifyListeners();
+        });
     }
     print("Ending flight");
   }
@@ -135,35 +135,55 @@ class FlightViewModel extends ChangeNotifier {
     code = code.substring(0, code.length.clamp(0, 6)).toUpperCase();
 
     collection
-        .where('code', isEqualTo: code)
-        .where('status', isNotEqualTo: FlightStatus.ongoing.index)
-        .limit(1)
-        .get()
-        .then((snapshot) {
-      flight = (snapshot.size > 0)
+      .where('code', isEqualTo: code)
+      .where('status', isNotEqualTo: FlightStatus.ended.index)
+      .limit(1)
+      .get()
+      .then((snapshot) {
+        flight = (snapshot.size > 0)
           ? Flight.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
           : null;
-      if (flight != null) {
-        //Connected to flight
-        print("Connected to flight with code: $code");
-        _listenToFlightUpdates(flight?.uniqueId);
-        notifyListeners();
-        return true;
-      }
-      //Flight not found
-      Fluttertoast.showToast(
+
+        if (flight != null) {
+          //Connected to flight
+          print("Connected to flight with code: $code");
+          _addMyselfAsFlightOperator();
+          _listenToFlightUpdates(flight?.uniqueId);
+          notifyListeners();
+          return true;
+        }
+        //Flight not found
+        Fluttertoast.showToast(
           msg: "Flight not found",
           toastLength: Toast.LENGTH_SHORT,
           gravity: ToastGravity.BOTTOM,
           timeInSecForIosWeb: 1,
           backgroundColor: Colors.grey,
           textColor: Colors.white,
-          fontSize: 16.0);
-      // ignore: body_might_complete_normally_catch_error
-    }).catchError((error) {
-      print(error);
-    });
+          fontSize: 16.0
+        );
+        // ignore: body_might_complete_normally_catch_error
+      }).catchError((error) {
+        print(error);
+      });
 
     return false;
+  }
+
+  Future<bool> amITheFlightLauncher() async {
+    var id = await fetchlauncherUid();
+
+    return (flight != null && flight?.launcherId == id);
+  }
+
+  Future _addMyselfAsFlightOperator() async {
+    flight?.operatorIds.add(await fetchlauncherUid());
+
+    collection
+      .doc(flight?.uniqueId)
+      .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+      .then((value) {
+        notifyListeners();
+      });
   }
 }

@@ -29,8 +29,6 @@ class Flight {
   bool get iStarted =>
       status == FlightStatus.started || status == FlightStatus.ongoing;
 
-  bool get amILauncher => true; // launcherId == ""; TODO check current user Id
-
   static Flight fromFirestore(String id, Object? raw) {
     Map<String, dynamic> data = raw as Map<String, dynamic>;
 
@@ -40,7 +38,7 @@ class Flight {
       createdAt: (data['createdAt'] as Timestamp).toDate(),
       launcherId: data['launcherId'] ?? '',
       status: (FlightStatus.values[data['status']]),
-      operatorIds: [],
+      operatorIds: List<String>.from(data['operatorIds']),
     );
   }
 
@@ -49,7 +47,7 @@ class Flight {
       'code': code,
       'status': status.index,
       'createdAt': createdAt,
-      'launcher': launcherId,
+      'launcherId': launcherId,
       'operatorIds': operatorIds,
     };
   }

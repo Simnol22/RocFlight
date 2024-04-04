@@ -64,8 +64,9 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
       case 3:
         return const HistoryView();
       default:
-        return Consumer<FlightViewModel>(
-          builder: (context, flightViewModel, child) => const FlightView(),
+        return ChangeNotifierProvider<FlightViewModel>(
+          create: (context) => FlightViewModel(),
+          child: const FlightView(),
         );
     }
   }
