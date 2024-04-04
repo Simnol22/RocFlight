@@ -1,24 +1,29 @@
 class Rocket {
   String? rocketID;
-  int? altitude;
+  double? altitude;
+  double? altitudeGPS;
   Geopoint? coordinates;
   Vector3? acceleration;
   Vector3? gyroscope;
   Vector3? velocity;
+  double? verticalVelocity;
   DateTime? timestamp;
 
   Rocket(
       {this.rocketID,
       this.altitude,
+      this.altitudeGPS,
       this.coordinates,
       this.acceleration,
       this.gyroscope,
       this.velocity,
+      this.verticalVelocity,
       this.timestamp});
 
   Rocket.fromJson(Map<String, dynamic> json) {
     rocketID = json['rocketID'];
     altitude = json['altitude'];
+    altitudeGPS = json['altitudeGPS'];
     coordinates = json['coordinates'] != null
         ? Geopoint.fromJson(json['Geopoint'])
         : null;
@@ -29,11 +34,14 @@ class Rocket {
         json['gyroscope'] != null ? Vector3.fromMap(json['gyroscope']) : null;
     velocity =
         json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
+    verticalVelocity = json['verticalVelocity'];
+    timestamp = json['timestamp'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['altitude'] = altitude;
+    data['altitudeGPS'] = altitudeGPS;
     if (coordinates != null) {
       data['coordinates'] = coordinates!.toJson();
     }
@@ -46,6 +54,7 @@ class Rocket {
     if (velocity != null) {
       data['velocity'] = velocity!.toMap();
     }
+    data['verticalVelocity'] = verticalVelocity;
     data['timestamp'] = timestamp;
 
     return data;

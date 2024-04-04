@@ -2,26 +2,87 @@ import 'package:roc_flight/src/model/flight.dart';
 import 'package:roc_flight/src/model/rocket.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:roc_flight/src/services/sensors.dart';
+import 'package:roc_flight/src/services/location_service.dart';
+import 'dart:math';
+import 'dart:io';
+
+
 
 enum rocketState {INIT, STANDBY, ASCENT, DESCENT, LANDING, RECOVERY}
 class RocketViewModel extends ChangeNotifier {
   CollectionReference rocketCollection = FirebaseFirestore.instance.collection('flights'); //cant put null. Will be overriden
-  Rocket? rocket;
+  Rocket rocket = Rocket();
   Flight? flight;
+  DateTime? lastAccelTime;
+  DateTime? lastPressTime;
+  double? lastAltitude;
 
   void setupRocket(Flight? currentFlight){
     print(rocketCollection);
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
-    double? z = 0;
-    rocket = Rocket(timestamp: DateTime.now(), altitude: 0, coordinates: Geopoint(z,z), acceleration: Vector3(z,z,z), velocity: Vector3(z,z,z), gyroscope: Vector3(z,z,z));
+    rocket.coordinates= Geopoint(0.0,0.0);//For testing fetching location
     sendData();
   } 
   void sendData(){
-    rocketCollection.add(rocket!.toJson()).then((value) {
-      rocket!.rocketID = value.id;
+    rocketCollection.add(rocket.toJson()).then((value) {
+      rocket.rocketID = value.id;
+    });
+    print("rocket sent !");
+  }
+  
+  void activateSensors(){
+    print("activating sensors");
+    SensorService sensorService = SensorService();
+    sensorService.getAccelerometerStream()?.listen((event) {
+      rocket.acceleration = Vector3(event.x, event.y, event.z);
+      rocket.timestamp = DateTime.now();
+      calculateVelocity(rocket.timestamp);
+      lastAccelTime = rocket.timestamp;
+    });
+    
+    sensorService.getGyroscopeStream()?.listen((event) {
+      rocket.gyroscope = Vector3(event.x, event.y, event.z);
+    });
+
+    sensorService.getPressureStream()?.listen((event) {
+      rocket.timestamp = DateTime.now();
+      calculateAltitude(event);
+      calculateVerticalVelocity(rocket.timestamp);
+      lastPressTime = rocket.timestamp;
+      lastAltitude = rocket.altitude;
     });
   }
+  
+  // Altitude calculated with magic RockÉTS formula (NOAA Formula)
+  // (pressure changed from hPa to Pa)
+  void calculateAltitude(double pressure){  
+    var altitude = 44307.693 - 4942.781 * pow((pressure*100), 0.190284);
+    rocket.altitude = altitude;
+    print("altitude !");
+    print(rocket.altitude);
+  }
+
+  // À VÉRIFIER SVP ! SUS ! 
+  void calculateVelocity(time){
+    if(lastAccelTime != null){
+      var deltaT = time.difference(lastAccelTime).inMicroseconds / Duration.microsecondsPerSecond;
+      rocket.velocity ??= Vector3(0, 0, 0);
+      rocket.velocity!.x += rocket.acceleration!.x * deltaT;
+      rocket.velocity!.y += rocket.acceleration!.y * deltaT;
+      rocket.velocity!.z += rocket.acceleration!.z * deltaT;
+    }
+  }
+
+  //More reliable speed :)
+  void calculateVerticalVelocity(time){
+    if(lastPressTime != null && lastAltitude != null){
+      var deltaT = time.difference(lastPressTime).inMicroseconds / Duration.microsecondsPerSecond;
+      rocket.verticalVelocity = (rocket.altitude! - lastAltitude!)*deltaT;
+    }
+  }
+
   void runFlight() {
     var currentState = rocketState.INIT;
     while(true){
