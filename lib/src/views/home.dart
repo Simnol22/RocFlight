@@ -7,7 +7,7 @@ import 'package:roc_flight/src/views/history_view.dart';
 import 'package:roc_flight/src/views/live_data_view.dart';
 import 'package:provider/provider.dart';
 import 'package:roc_flight/src/viewmodel/location_view_model.dart';
-import 'package:roc_flight/src/location_service.dart';
+import 'package:roc_flight/src/services/location_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeView extends StatefulWidget {

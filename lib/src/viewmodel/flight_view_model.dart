@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:roc_flight/src/services/sensors.dart';
-import 'package:roc_flight/src/storage_service.dart';
+import 'package:roc_flight/src/services/storage_service.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
@@ -12,21 +12,38 @@ class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
   CollectionReference collection =
       FirebaseFirestore.instance.collection('flights');
-  // Represent the current active flight (regardless of the user mode)
-  Flight? flight;
 
+  
+  Flight? flight; // Represent the current active flight (regardless of the user mode)
+  RocketViewModel? rocketViewModel; // Represent the current active rocket
+  String launcherUid = '';
+  bool isFlightStarted = false; // for later use
+  
   // Get the current flight
   Flight? get currentFlight => flight;
 
-  String launcherUid = '';
-  RocketViewModel? rocketViewModel;
-  bool isFlightStarted = false;
-    
+  // Get the current rocket
+  RocketViewModel? get currentRocket => rocketViewModel;
+  
   void createRocket(){
     rocketViewModel = RocketViewModel();
+    rocketViewModel?.activateSensors();
+  }
+  
+  void sendData(){
     rocketViewModel?.setupRocket(flight!);
   }
-
+  double? getAltitude(){
+    if (rocketViewModel == null) {
+      return 0.0;
+    }
+    else{
+      if (rocketViewModel!.rocket.altitude == null) {
+        return 0.0;
+      }
+    }
+    return rocketViewModel!.rocket.altitude;
+  }
   void createFlight() {
     fetchlauncherUid().then((uid) {
       launcherUid = uid;
@@ -54,6 +71,7 @@ class FlightViewModel extends ChangeNotifier {
         //This is only for test. Creates the rocketviewModel and add entry to firestore.
         print("testing rocket creation");
         createRocket();
+        sendData();
         //----------------------------------------------------------
       });
     }).catchError((error) {
@@ -63,20 +81,16 @@ class FlightViewModel extends ChangeNotifier {
   }
 
   void startFlight() {
-    rocketViewModel = RocketViewModel();
-    if (flight != null) {
-      flight?.status = FlightStatus.started;
-      collection
-          .doc(flight?.uniqueId)
-          .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-          .then((value) => notifyListeners());
-    }
-    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
-      print("flight running");
-    }
-    while (flight?.status == FlightStatus.started || flight?.status == FlightStatus.ongoing	) {
-      print("flight running");
-    }
+    print("Starting flight");
+    ///rocketViewModel = RocketViewModel();
+    ///if (flight != null) {
+    ///  flight?.status = FlightStatus.started;
+    ///  collection
+    ///      .doc(flight?.uniqueId)
+    ///      .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+    ///      .then((value) => notifyListeners());
+    ///}
+   
   }
 
   void endFlight() {
