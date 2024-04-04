@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:roc_flight/src/location_service.dart';
+import 'package:roc_flight/src/services/location_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:roc_flight/src/model/flight.dart';
