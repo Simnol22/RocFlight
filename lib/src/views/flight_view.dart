@@ -10,7 +10,7 @@ enum FlightMode { operator, launcher }
 
 enum ConnectionStatus { connected, disconnected, pending }
 
-Widget _buildStatusIndicator(Flight? flight) {
+Widget _buildStatusIndicator(Flight? flight, bool? isLauncher) {
   Color color;
   ConnectionStatus status = ConnectionStatus.disconnected;
   FlightMode? mode;
@@ -23,8 +23,9 @@ Widget _buildStatusIndicator(Flight? flight) {
     } else {
       status = ConnectionStatus.pending;
     }
-
-    mode = flight.amILauncher ? FlightMode.launcher : FlightMode.operator;
+    if (isLauncher != null) {
+      mode = isLauncher ? FlightMode.launcher : FlightMode.operator;
+    }
   }
 
   switch (status) {
@@ -114,6 +115,7 @@ class FlightViewState extends State<FlightView> {
                     _selectedFlightMode == FlightMode.operator
                         ? _OperatorModeWidget(
                             flight: value.flight,
+                            flightViewModel: value,
                             onConnectPressed: (code) => value.connectToFlightByCode(code),
                           )
                         : _LauncherModeWidget(
@@ -157,8 +159,18 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
   @override
   Widget build(BuildContext context) {
     SensorService sensorService = SensorService();
+
     return Column(children: [
-      _buildStatusIndicator(widget.flight),
+      FutureBuilder<bool>(
+        future: widget.flightViewModel.amITheFlightLauncher(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return _buildStatusIndicator(widget.flight, null);
+          } else {
+            return _buildStatusIndicator(widget.flight, snapshot.data ?? false);
+          }
+        },
+      ),
       CustomCard(
         title: "Flight code",
         children: Column(
@@ -309,10 +321,12 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
 class _OperatorModeWidget extends StatefulWidget {
   const _OperatorModeWidget({
     required this.flight,
+    required this.flightViewModel,
     required this.onConnectPressed,
   });
 
   final Flight? flight;
+  final FlightViewModel flightViewModel;
   final bool Function(String flightCode) onConnectPressed;
 
   @override
@@ -334,7 +348,16 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _buildStatusIndicator(widget.flight),
+        FutureBuilder<bool>(
+          future: widget.flightViewModel.amITheFlightLauncher(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return _buildStatusIndicator(widget.flight, null);
+            } else {
+              return _buildStatusIndicator(widget.flight, snapshot.data ?? false);
+            }
+          },
+        ),
         CustomCard(
           title: "Enter flight code",
           children: Column(
