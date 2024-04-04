@@ -28,6 +28,7 @@ dependencies:
   path_provider: ^2.1.2
   uuid: ^4.3.3
   sensors_plus: ^5.0.0
+  environment_sensors: ^0.3.0
 
 
 dev_dependencies:

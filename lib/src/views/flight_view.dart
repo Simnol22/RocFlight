@@ -118,9 +118,7 @@ class FlightViewState extends State<FlightView> {
                           )
                         : _LauncherModeWidget(
                             flight: value.flight,
-                            onCreateFlightPressed: value.createFlight,
-                            onStartFlightPressed: value.startFlight,
-                            onEndFlightPressed: value.endFlight,
+                            flightViewModel: value,
                           ),
                   ],
                 ),
@@ -137,15 +135,11 @@ class FlightViewState extends State<FlightView> {
 class _LauncherModeWidget extends StatefulWidget {
   const _LauncherModeWidget({
     required this.flight,
-    required this.onCreateFlightPressed,
-    required this.onStartFlightPressed,
-    required this.onEndFlightPressed,
+    required this.flightViewModel,
   });
 
   final Flight? flight;
-  final Function onCreateFlightPressed;
-  final Function onStartFlightPressed;
-  final Function onEndFlightPressed;
+  final FlightViewModel flightViewModel;
 
   @override
   _LauncherModeWidgetState createState() => _LauncherModeWidgetState();
@@ -176,7 +170,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _hasActiveFlight() ? null : () => {widget.onCreateFlightPressed()},
+                onPressed: _hasActiveFlight() ? null : () => {widget.flightViewModel.createFlight()},
                 style: ElevatedButton.styleFrom(
                   disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 ),
@@ -193,7 +187,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _hasStartedFlight() ? null : () => {widget.onStartFlightPressed()},
+                onPressed: _hasStartedFlight() ? null : () => {widget.flightViewModel.startFlight()},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -206,7 +200,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: !_hasActiveFlight() ? null : () => {widget.onEndFlightPressed()},
+                onPressed: !_hasActiveFlight() ? null : () => {widget.flightViewModel.endFlight()},
                 style: ElevatedButton.styleFrom(
                   disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 ),
@@ -217,71 +211,96 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
         ),
       ),
       CustomCard(
-        title: "Accelerometer",
-        children: StreamBuilder<AccelerometerEvent>(
-          stream: sensorService.getAccelerometerStream(),
-          builder: (BuildContext context, AsyncSnapshot<AccelerometerEvent> snapshot) {
-            if (snapshot.hasData) {
-              AccelerometerEvent? event = snapshot.data;
-              return SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Text('x:${event?.x.toStringAsFixed(2)}'),
-                    Text('y:${event?.y.toStringAsFixed(2)}'),
-                    Text('z:${event?.z.toStringAsFixed(2)}'),
-                  ],
-                ),
-              );
-            }
-            return const Text('No data');
-          },
-        ),
+       title: "Altitude",
+       children: Text('Altitude : ${widget.flightViewModel.getAltitude()?.toStringAsFixed(2)} m'), //Need to be fixed
       ),
-      CustomCard(
-        title: "Gyroscope",
-        children: StreamBuilder<GyroscopeEvent>(
-          stream: sensorService.getGyroscopeStream(),
-          builder: (BuildContext context, AsyncSnapshot<GyroscopeEvent> snapshot) {
-            if (snapshot.hasData) {
-              GyroscopeEvent? event = snapshot.data;
-              return SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Text('x:${event?.x.toStringAsFixed(2)}'),
-                    Text('y:${event?.y.toStringAsFixed(2)}'),
-                    Text('z:${event?.z.toStringAsFixed(2)}'),
-                  ],
-                ),
-              );
-            }
-            return const Text('No data');
-          },
-        ),
-      ),
-      CustomCard(
-        title: "Magnometer",
-        children: StreamBuilder<MagnetometerEvent>(
-          stream: sensorService.getMagnometerStream(),
-          builder: (BuildContext context, AsyncSnapshot<MagnetometerEvent> snapshot) {
-            if (snapshot.hasData) {
-              MagnetometerEvent? event = snapshot.data;
-              return SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Text('x:${event?.x.toStringAsFixed(2)}'),
-                    Text('y:${event?.y.toStringAsFixed(2)}'),
-                    Text('z:${event?.z.toStringAsFixed(2)}'),
-                  ],
-                ),
-              );
-            }
-            return const Text('No data');
-          },
-        ),
-      )
+      //CustomCard(
+      //  title: "Temperature",
+      //  children: StreamBuilder<double>(
+      //    stream: sensorService.getTemperatureStream(),
+      //    builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+      //      if (snapshot.hasData) {
+      //        double? event = snapshot.data;
+      //        return SizedBox(
+      //          width: double.infinity,
+      //          child: Column(
+      //            children: [
+      //              Text('Temperature : ${event?.toStringAsFixed(2)} Pa')
+      //            ],
+      //          ),
+      //        );
+      //      }
+      //      return const Text('No data');
+      //    },
+      //  ),
+      //),
+
+      //CustomCard(
+      //  title: "Accelerometer",
+      //  children: StreamBuilder<AccelerometerEvent>(
+      //    stream: sensorService.getAccelerometerStream(),
+      //    builder: (BuildContext context, AsyncSnapshot<AccelerometerEvent> snapshot) {
+      //      if (snapshot.hasData) {
+      //        AccelerometerEvent? event = snapshot.data;
+      //        return SizedBox(
+      //          width: double.infinity,
+      //          child: Column(
+      //            children: [
+      //              Text('x:${event?.x.toStringAsFixed(2)}'),
+      //              Text('y:${event?.y.toStringAsFixed(2)}'),
+      //              Text('z:${event?.z.toStringAsFixed(2)}'),
+      //            ],
+      //          ),
+      //        );
+      //      }
+      //      return const Text('No data');
+      //    },
+      //  ),
+      //),
+      //CustomCard(
+      //  title: "Gyroscope",
+      //  children: StreamBuilder<GyroscopeEvent>(
+      //    stream: sensorService.getGyroscopeStream(),
+      //    builder: (BuildContext context, AsyncSnapshot<GyroscopeEvent> snapshot) {
+      //      if (snapshot.hasData) {
+      //        GyroscopeEvent? event = snapshot.data;
+      //        return SizedBox(
+      //          width: double.infinity,
+      //          child: Column(
+      //            children: [
+      //              Text('x:${event?.x.toStringAsFixed(2)}'),
+      //              Text('y:${event?.y.toStringAsFixed(2)}'),
+      //              Text('z:${event?.z.toStringAsFixed(2)}'),
+      //            ],
+      //          ),
+      //        );
+      //      }
+      //      return const Text('No data');
+      //    },
+      //  ),
+      //),
+      //CustomCard(
+      //  title: "Magnometer",
+      //  children: StreamBuilder<MagnetometerEvent>(
+      //    stream: sensorService.getMagnometerStream(),
+      //    builder: (BuildContext context, AsyncSnapshot<MagnetometerEvent> snapshot) {
+      //      if (snapshot.hasData) {
+      //        MagnetometerEvent? event = snapshot.data;
+      //        return SizedBox(
+      //          width: double.infinity,
+      //          child: Column(
+      //            children: [
+      //              Text('x:${event?.x.toStringAsFixed(2)}'),
+      //              Text('y:${event?.y.toStringAsFixed(2)}'),
+      //              Text('z:${event?.z.toStringAsFixed(2)}'),
+      //            ],
+      //          ),
+      //        );
+      //      }
+      //      return const Text('No data');
+      //    },
+      //  ),
+      //)
     ]);
   }
 }
