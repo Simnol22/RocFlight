@@ -59,11 +59,12 @@ class RocketViewModel extends ChangeNotifier {
   }
 
   saveDateToDB(){
-    Stream.periodic(Duration(seconds: 3)).listen((event) { 
+    Stream.periodic(Duration(seconds: 15)).listen((event) { 
       print("test");
       sendData();
     });
   }
+  
   // Altitude calculated with magic RockÉTS formula (NOAA Formula)
   // (pressure changed from hPa to Pa)
   void calculateAltitude(double pressure){  
