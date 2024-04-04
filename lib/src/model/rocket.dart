@@ -23,7 +23,7 @@ class Rocket {
   Rocket.fromJson(Map<String, dynamic> json) {
     rocketID = json['rocketID'];
     altitude = json['altitude'];
-    altitudeGPS = json['altitudeGPS'];
+    altitudeGPS = json['altitudeGPS'];  
     coordinates = json['coordinates'] != null
         ? Geopoint.fromJson(json['Geopoint'])
         : null;
