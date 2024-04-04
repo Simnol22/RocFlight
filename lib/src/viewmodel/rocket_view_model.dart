@@ -22,7 +22,7 @@ class RocketViewModel extends ChangeNotifier {
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
     rocket.coordinates= Geopoint(0.0,0.0);//For testing fetching location
-    sendData();
+    saveDateToDB();
   } 
   void sendData(){
     rocketCollection.add(rocket.toJson()).then((value) {
@@ -52,14 +52,17 @@ class RocketViewModel extends ChangeNotifier {
       lastPressTime = rocket.timestamp;
       lastAltitude = rocket.altitude;
     });
-    saveDateToDB();
+    
   }
   Stream<double> getAltitudeStream(){
     return Stream<double>.periodic(Duration(seconds: 1), (x) => rocket.altitude!);
   }
 
   saveDateToDB(){
-    Stream.periodic(Duration(seconds: 3), (x) => sendData());
+    Stream.periodic(Duration(seconds: 3)).listen((event) { 
+      print("test");
+      sendData();
+    });
   }
   // Altitude calculated with magic RockÉTS formula (NOAA Formula)
   // (pressure changed from hPa to Pa)

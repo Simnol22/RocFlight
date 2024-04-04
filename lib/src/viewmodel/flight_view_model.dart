@@ -34,6 +34,9 @@ class FlightViewModel extends ChangeNotifier {
     rocketViewModel?.setupRocket(flight!);
   }
   Stream<double>? getAltitude(){
+    if (rocketViewModel == null) {
+      return null;
+    }
     return rocketViewModel!.getAltitudeStream();
   }
   void createFlight() {
