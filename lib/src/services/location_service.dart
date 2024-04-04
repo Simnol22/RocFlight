@@ -3,6 +3,12 @@ import 'package:geolocator/geolocator.dart';
 class LocationService {
   /// Checks and requests location permissions.
   /// Returns true if permissions are granted, otherwise false.
+  Stream<Position>? _gpsEvents;
+  
+  LocationService() {
+    _gpsEvents = Geolocator.getPositionStream();
+  }
+
   Future<bool> checkAndRequestLocationPermissions() async {
     bool serviceEnabled;
     LocationPermission permission;
@@ -42,5 +48,9 @@ class LocationService {
       // Handle any errors that occur during location fetching.
       return Future.error('Error fetching current location');
     }
+  }
+  //Get gps stream
+  Stream<Position>? getGPSStream() {
+    return _gpsEvents;
   }
 }

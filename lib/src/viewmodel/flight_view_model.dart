@@ -24,6 +24,7 @@ class FlightViewModel extends ChangeNotifier {
 
   // Get the current rocket
   RocketViewModel? get currentRocket => rocketViewModel;
+  String? get launcherId => launcherUid;
   
   void createRocket(){
     rocketViewModel = RocketViewModel();
@@ -33,16 +34,11 @@ class FlightViewModel extends ChangeNotifier {
   void sendData(){
     rocketViewModel?.setupRocket(flight!);
   }
-  double? getAltitude(){
+  Stream<double>? getAltitude(){
     if (rocketViewModel == null) {
-      return 0.0;
+      return null;
     }
-    else{
-      if (rocketViewModel!.rocket.altitude == null) {
-        return 0.0;
-      }
-    }
-    return rocketViewModel!.rocket.altitude;
+    return rocketViewModel!.getAltitudeStream();
   }
   void createFlight() {
     fetchlauncherUid().then((uid) {
