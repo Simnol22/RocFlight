@@ -33,16 +33,8 @@ class FlightViewModel extends ChangeNotifier {
   void sendData(){
     rocketViewModel?.setupRocket(flight!);
   }
-  double? getAltitude(){
-    if (rocketViewModel == null) {
-      return 0.0;
-    }
-    else{
-      if (rocketViewModel!.rocket.altitude == null) {
-        return 0.0;
-      }
-    }
-    return rocketViewModel!.rocket.altitude;
+  Stream<double>? getAltitude(){
+    return rocketViewModel!.getAltitudeStream();
   }
   void createFlight() {
     fetchlauncherUid().then((uid) {

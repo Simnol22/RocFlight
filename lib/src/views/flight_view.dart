@@ -210,30 +210,27 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           ],
         ),
       ),
+
       CustomCard(
-       title: "Altitude",
-       children: Text('Altitude : ${widget.flightViewModel.getAltitude()?.toStringAsFixed(2)} m'), //Need to be fixed
+        title: "Altitude",
+        children: StreamBuilder<double>(
+          stream: widget.flightViewModel.getAltitude(),
+          builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+            if (snapshot.hasData) {
+              double? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('Altitude : ${event?.toStringAsFixed(2)} m')
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
       ),
-      //CustomCard(
-      //  title: "Temperature",
-      //  children: StreamBuilder<double>(
-      //    stream: sensorService.getTemperatureStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
-      //      if (snapshot.hasData) {
-      //        double? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('Temperature : ${event?.toStringAsFixed(2)} Pa')
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
 
       //CustomCard(
       //  title: "Accelerometer",

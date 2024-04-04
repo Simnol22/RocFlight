@@ -7,9 +7,8 @@ import 'package:roc_flight/src/services/location_service.dart';
 import 'dart:math';
 import 'dart:io';
 
-
-
 enum rocketState {INIT, STANDBY, ASCENT, DESCENT, LANDING, RECOVERY}
+
 class RocketViewModel extends ChangeNotifier {
   CollectionReference rocketCollection = FirebaseFirestore.instance.collection('flights'); //cant put null. Will be overriden
   Rocket rocket = Rocket();
@@ -53,8 +52,15 @@ class RocketViewModel extends ChangeNotifier {
       lastPressTime = rocket.timestamp;
       lastAltitude = rocket.altitude;
     });
+    saveDateToDB();
   }
-  
+  Stream<double> getAltitudeStream(){
+    return Stream<double>.periodic(Duration(seconds: 1), (x) => rocket.altitude!);
+  }
+
+  saveDateToDB(){
+    Stream.periodic(Duration(seconds: 3), (x) => sendData());
+  }
   // Altitude calculated with magic RockÉTS formula (NOAA Formula)
   // (pressure changed from hPa to Pa)
   void calculateAltitude(double pressure){  
