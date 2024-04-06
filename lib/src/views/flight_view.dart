@@ -75,10 +75,25 @@ class FlightView extends StatefulWidget {
 class FlightViewState extends State<FlightView> {
   FlightMode? _selectedFlightMode = FlightMode.operator;
 
+  @override
+  void initState() {
+    super.initState();
+    updateSelectedFlightMode();
+  }
+
   void _onFlightModeChanged(FlightMode? mode) {
     setState(() {
       _selectedFlightMode = mode;
     });
+  }
+
+  void updateSelectedFlightMode() {
+    final viewModel = Provider.of<FlightViewModel>(context, listen: false);
+
+    viewModel.amITheFlightLauncher()
+      .then((amILauncher) {
+        setState(() { _selectedFlightMode = amILauncher ? FlightMode.launcher : FlightMode.operator; });
+      });
   }
 
   @override
