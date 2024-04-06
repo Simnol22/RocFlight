@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roc_flight/src/components/custom_card.dart';
 import 'package:roc_flight/src/viewmodel/live_data_view_model.dart';
 
 class LiveDataView extends StatelessWidget {
@@ -10,342 +13,162 @@ class LiveDataView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Consumer<LiveDataViewModel>(
-      builder: (context, liveDataViewModel, child) {
+      builder: (context, viewModel, child) {
         return ListView(
           children: [
-            _buildConnectionHeader(liveDataViewModel.mockIsConnected),
-            const SizedBox(height: 16),
-            _buildRocketStatusHeader(liveDataViewModel.mockRocketStatus),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildCurrentAltitudeHeader(liveDataViewModel.mockCurrentAltitude),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildApogeeHeader(liveDataViewModel.mockApogeeAltitude),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildCurrentVelocityHeader(liveDataViewModel.mockCurrentVelocity),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildMaxVelocityHeader(liveDataViewModel.mockMaxVelocity),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildCurrentAccelerationHeader(liveDataViewModel.mockCurrentAcceleration),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildMaxAccelerationHeader(liveDataViewModel.mockMaxAcceleration),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildCurrentRollHeader(liveDataViewModel.mockCurrentRollRate),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildMaxRollHeader(liveDataViewModel.mockMaxRollRate),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
-            _buildBatteryHeader(liveDataViewModel.mockBatteryLevel),
-            const Divider(color: Colors.black, height: 1),
-            const SizedBox(height: 16),
+            _buildViewHeader(viewModel.isConnected),
+
+            _buildListTile(
+              'Rocket status ', 
+              viewModel.status
+            ),
+
+            _buildListTile(
+              'Current altitude ', 
+              '${viewModel.altitude.toStringAsFixed(2)} m', 
+              anim: viewModel.isValueDifferent((r) => r.altitude)
+            ),
+
+            _buildListTile(
+              'Current GPS altitude ', 
+              '${viewModel.altitudeGPS.toStringAsFixed(2)} m', 
+              anim: viewModel.isValueDifferent((r) => r.altitudeGPS)
+            ),
+
+            _buildListTile(
+              'Apogee altitude ', 
+              '${viewModel.mockApogeeAltitude} m'
+            ),
+
+            _buildListTile(
+              'Vertical velocity ', 
+              '${viewModel.verticalVelocity.toStringAsFixed(2)} m/s', 
+              anim: viewModel.isValueDifferent((r) => r.verticalVelocity)
+            ),
+
+            _buildListTile(
+              'Max velocity ', 
+              '${viewModel.mockMaxVelocity.toStringAsFixed(2)} m/s'
+            ),
+
+            _buildListTile(
+              'Velocity ', 
+              '(${viewModel.velocity.x.toStringAsFixed(1)}, ${viewModel.velocity.y.toStringAsFixed(1)}, ${viewModel.velocity.z.toStringAsFixed(1)}) m/s',
+              anim: viewModel.isValueDifferent((r) => r.velocity)
+            ),
+            
+            _buildListTile(
+              'Acceleration ',  
+              '(${viewModel.acceleration.x.toStringAsFixed(1)}, ${viewModel.acceleration.y.toStringAsFixed(1)}, ${viewModel.acceleration.z.toStringAsFixed(1)}) m/s²',
+              anim: viewModel.isValueDifferent((r) => r.acceleration)
+            ),
+            
+            _buildListTile(
+              'Gyroscope ', 
+              '(${viewModel.gyroscope.x.toStringAsFixed(1)}, ${viewModel.gyroscope.y.toStringAsFixed(1)}, ${viewModel.gyroscope.z.toStringAsFixed(1)}) °/s',
+              anim: viewModel.isValueDifferent((r) => r.gyroscope)
+            ),
+            
+            _buildListTile(
+              'Battery level ', 
+              '${viewModel.batteryLevel} %',
+              anim: viewModel.isValueDifferent((r) => r.batteryLevel)
+            ),
+           
+            _buildListTile(
+              'GPS coordinates ',  
+              'Lat ${viewModel.coordinates.latitude?.toStringAsFixed(6)}, Lon ${viewModel.coordinates.longitude?.toStringAsFixed(6)}',
+              anim: viewModel.isValueDifferent((r) => r.coordinates)
+            ),
           ],
         );
       },
     );
   }
 
-  Container _buildBatteryHeader(int batteryLevel) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildViewHeader(bool isConnected) {
+    return CustomCard(
+      title: "Live data",
+      children: Column(
         children: [
-          const Text(
-            'Rocket Battery Level:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$batteryLevel %',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildMaxRollHeader(double maxRollRate) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Max Roll Rate:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$maxRollRate °/s',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildCurrentRollHeader(double currentRollRate) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Current Roll Rate:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$currentRollRate °/s',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildMaxAccelerationHeader(double maxAcceleration) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Max Acceleration:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$maxAcceleration m/s²',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildCurrentAccelerationHeader(double currentAcceleration) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Current Acceleration:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$currentAcceleration m/s²',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildMaxVelocityHeader(double maxVelocity) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Max Velocity:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$maxVelocity m/s',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildCurrentVelocityHeader(double currentVelocity) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Current Velocity:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$currentVelocity m/s',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildApogeeHeader(double apogeeAltitude) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Apogee Altitude:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$apogeeAltitude m',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildCurrentAltitudeHeader(double currentAltitude) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Current Altitude:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            '$currentAltitude m',
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Container _buildRocketStatusHeader(String rocketStatus) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          const Text(
-            'Rocket Status:',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          Text(
-            rocketStatus,
-            style: const TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Row _buildConnectionHeader(bool isConnected) {
-    return Row(
-      children: [
-        const Expanded(
-          child: Card(
-            child: Padding(
-              padding: EdgeInsets.all(16.0),
-              child: Text(
-                'Live Data',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration( shape: BoxShape.circle,
+                  color: isConnected ? Colors.green : Colors.red,
+                )
               ),
-            ),
+              const SizedBox(width: 5),
+              Text(isConnected ? "CONNECTED" : "DISCONNECTED", overflow: TextOverflow.ellipsis),
+            ],
           ),
-        ),
-        Expanded(
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                children: [
-                  const Text(
-                    'Connection',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 24,
-                    height: 24,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: isConnected ? Colors.green : Colors.red,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
+        ],
+      ));
+  }
+
+  Widget _buildListTile(String label, String value, {bool anim = false}) {
+    return Card(
+      child: ListTile(
+        title: Text(label),
+        trailing: anim ? _AnimatedText(
+          duration: const Duration(milliseconds: 300),
+          color: Colors.lightGreen,
+          value: value,
+        ) : Text(value),
+      ),
+    );
+  }
+}
+
+class _AnimatedText extends StatefulWidget {
+  final Duration duration;
+  final Color? color;
+  final String value;
+
+  const _AnimatedText({
+    required this.duration,
+    required this.color,
+    required this.value,
+  });
+
+  @override
+  _AnimatedTextState createState() => _AnimatedTextState();
+}
+
+class _AnimatedTextState extends State<_AnimatedText> {
+  Color? _currentColor;
+
+  @override
+  void initState() {
+    super.initState();
+    _startAnimation();
+  }
+
+  @override
+  void didUpdateWidget(covariant _AnimatedText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.value != oldWidget.value) {
+      _startAnimation();
+    }
+  }
+
+  void _startAnimation() {
+    setState(() { _currentColor = widget.color; });
+
+    if (_currentColor != null) {
+      Timer(widget.duration, () { setState(() { _currentColor = null; }); });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      widget.value,
+      style: TextStyle(
+        color: _currentColor,
+      ),
     );
   }
 }

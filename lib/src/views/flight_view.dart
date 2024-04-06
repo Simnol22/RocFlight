@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:roc_flight/src/components/custom_card.dart';
 import 'package:roc_flight/src/model/flight.dart';
-import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
-import 'package:sensors_plus/sensors_plus.dart';
 
 enum FlightMode { operator, launcher }
-
 enum ConnectionStatus { connected, disconnected, pending }
 
 Widget _buildStatusIndicator(Flight? flight, bool? isLauncher) {
@@ -47,12 +45,13 @@ Widget _buildStatusIndicator(Flight? flight, bool? isLauncher) {
           Row(
             children: [
               Container(
-                  width: 10,
-                  height: 10,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: color,
-                  )),
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: color,
+                )
+              ),
               const SizedBox(width: 5),
               Text(
                 '${status.toString().split('.').last.toUpperCase()} ${mode == null ? '' : 'AS ${mode.toString().split('.').last.toUpperCase()}'}',
@@ -158,8 +157,6 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    SensorService sensorService = SensorService();
-
     return Column(children: [
       FutureBuilder<bool>(
         future: widget.flightViewModel.amITheFlightLauncher(),
@@ -222,94 +219,6 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           ],
         ),
       ),
-
-      CustomCard(
-        title: "Altitude",
-        children: StreamBuilder<double>(
-          stream: widget.flightViewModel.getAltitude(),
-          builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
-            if (snapshot.hasData) {
-              double? event = snapshot.data;
-              return SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Text('Altitude : ${event?.toStringAsFixed(2)} m')
-                  ],
-                ),
-              );
-            }
-            return const Text('No data');
-          },
-        ),
-      ),
-
-      //CustomCard(
-      //  title: "Accelerometer",
-      //  children: StreamBuilder<AccelerometerEvent>(
-      //    stream: sensorService.getAccelerometerStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<AccelerometerEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        AccelerometerEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
-      //CustomCard(
-      //  title: "Gyroscope",
-      //  children: StreamBuilder<GyroscopeEvent>(
-      //    stream: sensorService.getGyroscopeStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<GyroscopeEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        GyroscopeEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
-      //CustomCard(
-      //  title: "Magnometer",
-      //  children: StreamBuilder<MagnetometerEvent>(
-      //    stream: sensorService.getMagnometerStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<MagnetometerEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        MagnetometerEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //)
     ]);
   }
 }
@@ -385,37 +294,6 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
           ),
         ),
       ],
-    );
-  }
-}
-
-class CustomCard extends StatelessWidget {
-  final String title;
-  final Widget children;
-
-  const CustomCard({
-    super.key,
-    required this.title,
-    required this.children,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Card(
-        child: Padding(
-          padding: const EdgeInsets.all(12.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-              const SizedBox(height: 8),
-              children,
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

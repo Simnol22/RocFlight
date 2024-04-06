@@ -21,10 +21,12 @@ class HomeView extends StatefulWidget {
 
 class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   int _currentIndex = 0;
+  late final FlightViewModel flightViewModel;
 
   @override
   void initState() {
     super.initState();
+    flightViewModel = FlightViewModel();
     _requestLocationPermission(); // Request location permission on app start
   }
 
@@ -52,7 +54,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         );
       case 1:
         return ChangeNotifierProvider<LiveDataViewModel>(
-          create: (context) => LiveDataViewModel(context),
+          create: (context) => LiveDataViewModel(flightViewModel),
           child: const LiveDataView(),
         );
       case 2:
@@ -65,7 +67,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         return const HistoryView();
       default:
         return ChangeNotifierProvider<FlightViewModel>(
-          create: (context) => FlightViewModel(),
+          create: (context) => flightViewModel,
           child: const FlightView(),
         );
     }
@@ -75,7 +77,8 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (_) => FlightViewModel()),
+        ChangeNotifierProvider(create: (_) => flightViewModel),
+        ChangeNotifierProvider(create: (_) => LiveDataViewModel(flightViewModel)),
         // Add other global providers here if necessary
       ],
       child: Scaffold(
