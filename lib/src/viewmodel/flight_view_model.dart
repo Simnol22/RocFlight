@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/services/storage_service.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -10,40 +11,50 @@ import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
-  CollectionReference collection =
-      FirebaseFirestore.instance.collection('flights');
+  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
 
-  
   Flight? flight; // Represent the current active flight (regardless of the user mode)
   RocketViewModel? rocketViewModel; // Represent the current active rocket
   String launcherUid = '';
   bool isFlightStarted = false; // for later use
-  
+
   // Get the current flight
   Flight? get currentFlight => flight;
 
   // Get the current rocket
   RocketViewModel? get currentRocket => rocketViewModel;
-  
-  void createRocket(){
+  String? get launcherId => launcherUid;
+
+  void createRocket() {
     rocketViewModel = RocketViewModel();
     rocketViewModel?.activateSensors();
   }
-  
-  void sendData(){
+
+  void sendData() {
     rocketViewModel?.setupRocket(flight!);
   }
-  double? getAltitude(){
+
+  Stream<double>? getAltitude() {
     if (rocketViewModel == null) {
-      return 0.0;
+      return null;
     }
-    else{
-      if (rocketViewModel!.rocket.altitude == null) {
-        return 0.0;
-      }
-    }
-    return rocketViewModel!.rocket.altitude;
+    return rocketViewModel!.getAltitudeStream();
   }
+
+  Stream<Vector3>? getAcceleration() {
+    if (rocketViewModel == null) {
+      return null;
+    }
+    return rocketViewModel!.getAccelerationStream();
+  }
+
+  Stream<Vector3>? getVelocity() {
+    if (rocketViewModel == null) {
+      return null;
+    }
+    return rocketViewModel!.getVelocityStream();
+  }
+
   void createFlight() {
     fetchlauncherUid().then((uid) {
       launcherUid = uid;
@@ -51,15 +62,12 @@ class FlightViewModel extends ChangeNotifier {
         throw Exception('Error setting launcherUid');
       }
       print("Creating flight with launcherUid: $launcherUid");
-      Flight entry = Flight(
-        createdAt: DateTime.now(),
-        status: FlightStatus.created,
-        launcherId: launcherUid,
-        operatorIds: []);
+      Flight entry =
+          Flight(createdAt: DateTime.now(), status: FlightStatus.created, launcherId: launcherUid, operatorIds: []);
 
-    collection.add(entry.toFirestoreMap()).then((value) {
-      entry.uniqueId = value.id;
-      entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
+      collection.add(entry.toFirestoreMap()).then((value) {
+        entry.uniqueId = value.id;
+        entry.code = entry.uniqueId?.substring(0, 6).toUpperCase();
 
       collection
         .doc(entry.uniqueId)
@@ -82,6 +90,7 @@ class FlightViewModel extends ChangeNotifier {
 
   void startFlight() {
     print("Starting flight");
+
     ///rocketViewModel = RocketViewModel();
     ///if (flight != null) {
     ///  flight?.status = FlightStatus.started;
@@ -90,7 +99,6 @@ class FlightViewModel extends ChangeNotifier {
     ///      .set(flight?.toFirestoreMap(), SetOptions(merge: true))
     ///      .then((value) => notifyListeners());
     ///}
-   
   }
 
   void endFlight() {

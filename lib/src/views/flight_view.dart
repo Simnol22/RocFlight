@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:roc_flight/src/model/flight.dart';
+import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:sensors_plus/sensors_plus.dart';
@@ -222,53 +223,71 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           ],
         ),
       ),
-      CustomCard(
-       title: "Altitude",
-       children: Text('Altitude : ${widget.flightViewModel.getAltitude()?.toStringAsFixed(2)} m'), //Need to be fixed
-      ),
-      //CustomCard(
-      //  title: "Temperature",
-      //  children: StreamBuilder<double>(
-      //    stream: sensorService.getTemperatureStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
-      //      if (snapshot.hasData) {
-      //        double? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('Temperature : ${event?.toStringAsFixed(2)} Pa')
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
 
-      //CustomCard(
-      //  title: "Accelerometer",
-      //  children: StreamBuilder<AccelerometerEvent>(
-      //    stream: sensorService.getAccelerometerStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<AccelerometerEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        AccelerometerEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
+      CustomCard(
+        title: "Altitude",
+        children: StreamBuilder<double>(
+          stream: widget.flightViewModel.getAltitude(),
+          builder: (BuildContext context, AsyncSnapshot<double> snapshot) {
+            if (snapshot.hasData) {
+              double? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [Text('Altitude : ${event?.toStringAsFixed(2)} m')],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      ),
+
+      CustomCard(
+        title: "Accelerometer",
+        children: StreamBuilder<Vector3>(
+          stream: widget.flightViewModel.getAcceleration(),
+          builder: (BuildContext context, AsyncSnapshot<Vector3> snapshot) {
+            if (snapshot.hasData) {
+              Vector3? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('x:${event?.x.toStringAsFixed(2)}'),
+                    Text('y:${event?.y.toStringAsFixed(2)}'),
+                    Text('z:${event?.z.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      ),
+
+      CustomCard(
+        title: "Velocity",
+        children: StreamBuilder<Vector3>(
+          stream: widget.flightViewModel.getVelocity(),
+          builder: (BuildContext context, AsyncSnapshot<Vector3> snapshot) {
+            if (snapshot.hasData) {
+              Vector3? event = snapshot.data;
+              return SizedBox(
+                width: double.infinity,
+                child: Column(
+                  children: [
+                    Text('x:${event?.x.toStringAsFixed(2)}'),
+                    Text('y:${event?.y.toStringAsFixed(2)}'),
+                    Text('z:${event?.z.toStringAsFixed(2)}'),
+                  ],
+                ),
+              );
+            }
+            return const Text('No data');
+          },
+        ),
+      ),
       //CustomCard(
       //  title: "Gyroscope",
       //  children: StreamBuilder<GyroscopeEvent>(
