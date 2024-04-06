@@ -5,6 +5,7 @@ import 'package:roc_flight/src/model/rocket.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/services/storage_service.dart';
+import 'package:roc_flight/src/services/live_data_service.dart';
 import 'package:sensors_plus/sensors_plus.dart';
 import 'package:uuid/uuid.dart';
 import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
@@ -163,7 +164,9 @@ class FlightViewModel extends ChangeNotifier {
           //Connected to flight
           print("Connected to flight with code: $code");
           connected = true;
-          rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
+          LiveDataService flightService = LiveDataService();
+          flightService.connect(flight!);
+          //rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
           _addMyselfAsFlightOperator();
           _listenToFlightUpdates(flight?.uniqueId);
           notifyListeners();

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roc_flight/src/services/live_data_service.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
@@ -16,15 +17,16 @@ class LiveDataViewModel extends ChangeNotifier {
   }
 
   Flight? get currentFlight => _flightViewModel.currentFlight;
-  bool get isConnected => _flightViewModel.isConnected;
+  final LiveDataService _liveDataService = LiveDataService();
   Rocket? currentRocket;
+
 
   void tryToConnect(){
     StreamSubscription subscription = Stream.empty().listen((event) {});
     var stream = Stream.periodic(Duration(seconds: refreshRate));
     subscription = stream.listen((event) { 
-        print("Trying to connect... $isConnected");
-        if (isConnected){
+        print("Trying to connect... ");
+        if (_liveDataService.isFlightConnected){
           print("i am conected");
           subscription.cancel();
           innitLiveData();
@@ -33,17 +35,16 @@ class LiveDataViewModel extends ChangeNotifier {
   }
   void innitLiveData(){
     print("init live data");
-    print("is connected: $isConnected");
-    if (isConnected){
-      print("i am conected");
+    if (_liveDataService.isFlightConnected){
        Stream.periodic(Duration(seconds: refreshRate)).listen((event) { 
-        currentRocket = _flightViewModel.fetchLastValue();
-        notifyListeners();
+        currentRocket = _liveDataService.fetchLastVal();
+        print("fetching data...");
+        print(currentRocket?.altitude);
       });
     }
   }
   Stream<bool> isConnectedStream(){
-    return Stream<bool>.periodic(Duration(seconds: refreshRate), (x) => isConnected);
+    return Stream<bool>.periodic(Duration(seconds: refreshRate), (x) => _liveDataService.isFlightConnected);
   }
   Stream<double> altitudeStream(){
     return Stream<double>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.altitude ?? 0.0);
