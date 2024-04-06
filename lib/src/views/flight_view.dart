@@ -159,8 +159,6 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    SensorService sensorService = SensorService();
-
     return Column(children: [
       FutureBuilder<bool>(
         future: widget.flightViewModel.amITheFlightLauncher(),
@@ -265,73 +263,6 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           },
         ),
       ),
-
-      CustomCard(
-        title: "Velocity",
-        children: StreamBuilder<Vector3>(
-          stream: widget.flightViewModel.getVelocity(),
-          builder: (BuildContext context, AsyncSnapshot<Vector3> snapshot) {
-            if (snapshot.hasData) {
-              Vector3? event = snapshot.data;
-              return SizedBox(
-                width: double.infinity,
-                child: Column(
-                  children: [
-                    Text('x:${event?.x.toStringAsFixed(2)}'),
-                    Text('y:${event?.y.toStringAsFixed(2)}'),
-                    Text('z:${event?.z.toStringAsFixed(2)}'),
-                  ],
-                ),
-              );
-            }
-            return const Text('No data');
-          },
-        ),
-      ),
-      //CustomCard(
-      //  title: "Gyroscope",
-      //  children: StreamBuilder<GyroscopeEvent>(
-      //    stream: sensorService.getGyroscopeStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<GyroscopeEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        GyroscopeEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //),
-      //CustomCard(
-      //  title: "Magnometer",
-      //  children: StreamBuilder<MagnetometerEvent>(
-      //    stream: sensorService.getMagnometerStream(),
-      //    builder: (BuildContext context, AsyncSnapshot<MagnetometerEvent> snapshot) {
-      //      if (snapshot.hasData) {
-      //        MagnetometerEvent? event = snapshot.data;
-      //        return SizedBox(
-      //          width: double.infinity,
-      //          child: Column(
-      //            children: [
-      //              Text('x:${event?.x.toStringAsFixed(2)}'),
-      //              Text('y:${event?.y.toStringAsFixed(2)}'),
-      //              Text('z:${event?.z.toStringAsFixed(2)}'),
-      //            ],
-      //          ),
-      //        );
-      //      }
-      //      return const Text('No data');
-      //    },
-      //  ),
-      //)
     ]);
   }
 }

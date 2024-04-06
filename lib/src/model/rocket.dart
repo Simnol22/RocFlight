@@ -1,3 +1,5 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 class Rocket {
   String? rocketID;
   double? altitude;
@@ -7,6 +9,8 @@ class Rocket {
   Vector3? gyroscope;
   Vector3? velocity;
   double? verticalVelocity;
+  double? GPSVelocity;
+  int? batteryLevel;
   DateTime? timestamp;
 
   Rocket(
@@ -18,24 +22,28 @@ class Rocket {
       this.gyroscope,
       this.velocity,
       this.verticalVelocity,
+      this.GPSVelocity,
+      this.batteryLevel,
       this.timestamp});
 
-  Rocket.fromJson(Map<String, dynamic> json) {
-    rocketID = json['rocketID'];
-    altitude = json['altitude'];
-    altitudeGPS = json['altitudeGPS'];  
-    coordinates = json['coordinates'] != null
-        ? Geopoint.fromJson(json['Geopoint'])
+  Rocket.fromJson(Map<String, dynamic>? json) {
+    rocketID = json?['rocketID'];
+    altitude = json?['altitude'];
+    altitudeGPS = json?['altitudeGPS'];  
+    coordinates = json?['coordinates'] != null
+        ? Geopoint.fromJson(json?['coordinates'])
         : null;
-    acceleration = json['acceleration'] != null
-        ? Vector3.fromMap(json['acceleration'])
+    acceleration = json?['acceleration'] != null
+        ? Vector3.fromMap(json?['acceleration'])
         : null;
     gyroscope =
-        json['gyroscope'] != null ? Vector3.fromMap(json['gyroscope']) : null;
+        json?['gyroscope'] != null ? Vector3.fromMap(json?['gyroscope']) : null;
     velocity =
-        json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
-    verticalVelocity = json['verticalVelocity'];
-    timestamp = json['timestamp'];
+        json?['velocity'] != null ? Vector3.fromMap(json?['velocity']) : null;
+    verticalVelocity = json?['verticalVelocity'];
+    GPSVelocity = json?['GPSVelocity'];
+    batteryLevel = json?['batteryLevel'];
+    timestamp = (json?['timestamp'] as Timestamp).toDate();
   }
 
   Map<String, dynamic> toJson() {
@@ -55,6 +63,8 @@ class Rocket {
       data['velocity'] = velocity!.toMap();
     }
     data['verticalVelocity'] = verticalVelocity;
+    data['GPSVelocity'] = GPSVelocity;
+    data['batteryLevel'] = batteryLevel;
     data['timestamp'] = timestamp;
 
     return data;

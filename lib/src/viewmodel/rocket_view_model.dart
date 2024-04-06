@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/services/location_service.dart';
+import 'package:battery_info/battery_info_plugin.dart';
+import 'package:battery_info/model/android_battery_info.dart';
 import 'dart:math';
 import 'dart:io';
 
@@ -79,13 +81,18 @@ class RocketViewModel extends ChangeNotifier {
       lastPressTime = rocket.timestamp;
       lastAltitude = rocket.altitude;
     });
-    //Make sure you
-    locationService
-        .checkAndRequestLocationPermissions()
-        .then((value) => locationService.getGPSStream()?.listen((event) {
-              rocket.coordinates = Geopoint(event.latitude, event.longitude);
-              rocket.altitudeGPS = event.altitude;
-            }));
+    //Make sure you 
+    locationService.checkAndRequestLocationPermissions().then((value) => 
+    locationService.getGPSStream()?.listen((event) {
+      rocket.coordinates = Geopoint(event.latitude, event.longitude);
+      rocket.altitudeGPS = event.altitude;
+      rocket.GPSVelocity = event.speed;
+    }));
+    Stream.periodic(const Duration(seconds: 10)).listen((event) { 
+      BatteryInfoPlugin().androidBatteryInfo.then((value) {
+        rocket.batteryLevel = value?.batteryLevel;
+      });
+    });
   }
 
   Stream<double> getAltitudeStream() {

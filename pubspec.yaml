@@ -29,6 +29,7 @@ dependencies:
   uuid: ^4.3.3
   sensors_plus: ^5.0.0
   environment_sensors: ^0.3.0
+  battery_info: ^1.1.1
 
 
 dev_dependencies:

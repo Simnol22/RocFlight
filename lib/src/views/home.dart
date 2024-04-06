@@ -52,7 +52,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         );
       case 1:
         return ChangeNotifierProvider<LiveDataViewModel>(
-          create: (context) => LiveDataViewModel(context),
+          create: (context) => LiveDataViewModel(Provider.of<FlightViewModel>(context, listen: false)),
           child: const LiveDataView(),
         );
       case 2:
