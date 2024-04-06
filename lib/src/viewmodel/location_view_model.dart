@@ -11,13 +11,11 @@ class LocationViewModel extends ChangeNotifier {
   CollectionReference collection = FirebaseFirestore.instance.collection('flights');
   final FlightViewModel _flightViewModel;
   final LocationService _locationService = LocationService();
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   LocationViewModel(this._flightViewModel);
 
   LatLng? _rocketLocation;
   LatLng? get rocketLocation => _rocketLocation;
-
 
   Position? _currentPosition;
   Position? get currentPosition => _currentPosition;

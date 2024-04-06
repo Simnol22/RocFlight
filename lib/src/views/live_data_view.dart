@@ -161,7 +161,9 @@ class _AnimatedTextState extends State<_AnimatedText> {
       setState(() { _currentColor = widget.color; });
 
       if (_currentColor != null) {
-        timer = Timer(widget.duration, () { setState(() { _currentColor = null; }); });
+        timer = Timer(widget.duration, () { 
+          timer.isActive ? setState(() { _currentColor = null; }) : null; 
+        });
       }
     } catch(e) {}
     
