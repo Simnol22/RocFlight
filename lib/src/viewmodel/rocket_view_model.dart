@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:roc_flight/src/model/flight.dart';
 import 'package:roc_flight/src/model/rocket.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -12,8 +14,10 @@ import 'dart:io';
 enum rocketState { INIT, STANDBY, ASCENT, DESCENT, LANDING, RECOVERY }
 
 class RocketViewModel extends ChangeNotifier {
-  CollectionReference rocketCollection =
-      FirebaseFirestore.instance.collection('flights'); //cant put null. Will be overriden
+  CollectionReference rocketCollection = FirebaseFirestore.instance.collection('flights');
+
+  late Timer _periodicDataSenderTimer;
+
   Rocket rocket = Rocket();
   Flight? flight;
   DateTime? lastAccelTime;
@@ -29,16 +33,16 @@ class RocketViewModel extends ChangeNotifier {
   double gravity_z = 0.0;
 
   double alpha = 0.8;
-
+  
   void setupRocket(Flight? currentFlight) {
-    print(rocketCollection);
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
     rocket.coordinates = Geopoint(0.0, 0.0); //For testing fetching location
-    saveDataToDB();
+    saveDateToDB();
   }
 
   void sendData() {
+    rocket.timestamp = DateTime.now();
     rocketCollection.add(rocket.toJson()).then((value) {
       rocket.rocketID = value.id;
     });
@@ -46,7 +50,6 @@ class RocketViewModel extends ChangeNotifier {
   }
 
   void activateSensors() {
-    print("activating sensors");
     SensorService sensorService = SensorService();
     LocationService locationService = LocationService();
 
@@ -66,7 +69,6 @@ class RocketViewModel extends ChangeNotifier {
         rocket.acceleration!.z - gravity_z,
       );
       rocket.acceleration = linearAcceleration;
-      print("acceleration : $linearAcceleration");
 
       calculateVelocity(rocket.timestamp, linearAcceleration);
     });
@@ -88,6 +90,7 @@ class RocketViewModel extends ChangeNotifier {
       rocket.altitudeGPS = event.altitude;
       rocket.GPSVelocity = event.speed;
     }));
+
     Stream.periodic(const Duration(seconds: 10)).listen((event) { 
       BatteryInfoPlugin().androidBatteryInfo.then((value) {
         rocket.batteryLevel = value?.batteryLevel;
@@ -95,26 +98,14 @@ class RocketViewModel extends ChangeNotifier {
     });
   }
 
-  Stream<double> getAltitudeStream() {
-    return Stream<double>.periodic(Duration(seconds: 1), (x) => rocket.altitude!);
-  }
-
-  Stream<Vector3> getAccelerationStream() {
-    return Stream<Vector3>.periodic(Duration(milliseconds: 10), (x) => rocket.acceleration!);
-  }
-
-  Stream<Vector3> getGyroscopeStream() {
-    return Stream<Vector3>.periodic(Duration(seconds: 1), (x) => rocket.gyroscope!);
-  }
-
-  Stream<Vector3> getVelocityStream() {
-    return Stream<Vector3>.periodic(Duration(milliseconds: 10), (x) => rocket.velocity!);
-  }
-
   saveDateToDB() {
-    Stream.periodic(Duration(seconds: 3)).listen((event) {
-      //sendData();
+    _periodicDataSenderTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+      sendData();
     });
+  }
+
+  stopFlight() {
+    _periodicDataSenderTimer.cancel();
   }
 
   // Altitude calculated with magic RockÉTS formula (NOAA Formula)
@@ -125,26 +116,26 @@ class RocketViewModel extends ChangeNotifier {
   }
 
   void calculateVelocity(DateTime? time, Vector3 accel) {
-    double s = 0.75;
-    double dt = time!.difference(lastAccelTime!).inMilliseconds.toDouble();
+    try {
+      double s = 0.75;
+      double dt = time!.difference(lastAccelTime!).inMilliseconds.toDouble();
 
-    // Filter acceleration data
-    accelXFiltered = accelXFiltered * s + accel.x * (1 - s);
-    accelYFiltered = accelYFiltered * s + accel.y * (1 - s);
-    accelZFiltered = accelZFiltered * s + accel.z * (1 - s);
+      // Filter acceleration data
+      accelXFiltered = accelXFiltered * s + accel.x * (1 - s);
+      accelYFiltered = accelYFiltered * s + accel.y * (1 - s);
+      accelZFiltered = accelZFiltered * s + accel.z * (1 - s);
 
-    print("filtered acceleration : $accelXFiltered, $accelYFiltered, $accelZFiltered");
+      // Initialize rocket.velocity if it's null
+      rocket.velocity = rocket.velocity ?? Vector3(0.0, 0.0, 0.0);
 
-    // Initialize rocket.velocity if it's null
-    rocket.velocity = rocket.velocity ?? Vector3(0.0, 0.0, 0.0);
-
-    // Integrate just using a Reimann sum
-    rocket.velocity?.x += accelXFiltered * dt;
-    rocket.velocity?.y += accelYFiltered * dt;
-    rocket.velocity?.z += accelZFiltered * dt;
-
-    print("dt : $dt");
-    print("velocity : ${rocket.velocity?.x}, ${rocket.velocity?.y}, ${rocket.velocity?.z}");
+      // Integrate just using a Reimann sum
+      rocket.velocity?.x += accelXFiltered * dt;
+      rocket.velocity?.y += accelYFiltered * dt;
+      rocket.velocity?.z += accelZFiltered * dt;
+    } catch (e) {
+      print("error calculating velocity");
+    }
+    
   }
 
   void runFlight() {
