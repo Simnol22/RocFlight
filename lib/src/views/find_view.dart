@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
@@ -13,85 +15,93 @@ class FindView extends StatefulWidget {
 }
 
 class _FindViewState extends State<FindView> {
+  Completer<GoogleMapController> _controller = Completer();
+  Set<Marker> markers = {};
+
   @override
   void initState() {
     super.initState();
     Future.microtask(() {
-      final locationViewModel =
-          Provider.of<LocationViewModel>(context, listen: false);
+      final locationViewModel = Provider.of<LocationViewModel>(context, listen: false);
       locationViewModel.fetchUserLocation();
       locationViewModel.fetchLatestRocketLocation();
+      refreshMapAsync();
     });
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final locationViewModel = Provider.of<LocationViewModel>(context);
+  Future<void> refreshMapAsync () async {
+    final GoogleMapController controller = await _controller.future;
 
-    final LatLng? currentLocation = locationViewModel.currentPosition != null
-        ? LatLng(locationViewModel.currentPosition!.latitude,
-            locationViewModel.currentPosition!.longitude)
-        : null;
+    final viewModel = Provider.of<LocationViewModel>(context, listen: false);
 
-    final LatLng? rocketLocation = locationViewModel.rocketLocation;
-
-    final double? distanceToRocket =
-        (currentLocation != null && rocketLocation != null)
-            ? locationViewModel.calculateDistanceToRocket()
-            : null;
-
-    Set<Marker> markers = {};
+    controller.moveCamera(CameraUpdate.newCameraPosition(CameraPosition(
+      target: viewModel.currentLocation ?? viewModel.rocketLocation ?? const LatLng(45.5017, -73.5673),
+      zoom: 12,
+    )));
 
     // Check if the rocket location is available and add a marker for it
-    if (rocketLocation != null) {
+    if (viewModel.rocketLocation != null) {
       markers.add(
         Marker(
           markerId: const MarkerId('rocket_location'),
-          position: rocketLocation,
+          position: viewModel.rocketLocation!,
           infoWindow: InfoWindow(
             title: 'Rocket Location',
-            snippet: 'Distance: ${distanceToRocket?.toStringAsFixed(2)}m',
+            snippet: 'Distance: ${viewModel.distanceToRocket?.toStringAsFixed(2)}m',
           ),
         ),
       );
     }
+  }
 
-    LatLng initialCameraPosition = currentLocation ??
-        rocketLocation ??
-        const LatLng(45.5017, -73.5673); // Defaults to Montreal if no location
+  @override
+  Widget build(BuildContext context) {
+    
 
-    return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: <Widget>[
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Card(
-              child: ListTile(
-                title: const Text('Rocket Location'),
-                subtitle: Text(
-                  rocketLocation != null
-                      ? 'Lat: ${rocketLocation.latitude} Lon: ${rocketLocation.longitude}${distanceToRocket != null ? '\nDistance: ${distanceToRocket.toStringAsFixed(2)}m' : ''}'
-                      : 'Rocket location not available',
+    return Consumer<LocationViewModel>(
+      builder: (context, viewModel, child) {
+        return Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Card(
+                child: ListTile(
+                  title: const Text('Rocket Location'),
+                  subtitle: Text(
+                    viewModel.rocketLocation != null
+                        ? 'Lat: ${viewModel.rocketLocation?.latitude} Lon: ${viewModel.rocketLocation?.longitude}${viewModel.distanceToRocket != null ? '\nDistance: ${viewModel.distanceToRocket!.toStringAsFixed(2)}m' : ''}'
+                        : 'Rocket location not available',
+                  ),
+                  trailing: IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: () {
+                      viewModel.fetchUserLocation();
+                      viewModel.fetchLatestRocketLocation();
+                      refreshMapAsync();
+                    },
+                  )
                 ),
-                trailing: const Icon(Icons.rocket),
               ),
             ),
-          ),
-          Expanded(
-            child: GoogleMap(
-              initialCameraPosition: CameraPosition(
-                target: initialCameraPosition,
-                zoom: 10,
+            Expanded(
+              child: GoogleMap(
+                onMapCreated: (GoogleMapController controller) {
+                  _controller.complete(controller);
+                },
+                initialCameraPosition: const CameraPosition(
+                  target: LatLng(45.5017, -73.5673), // Defaults to Montreal if no location
+                  zoom: 10,
+                ),
+                markers: markers,
+                myLocationEnabled: true, // Show the blue dot on the map
+                myLocationButtonEnabled:
+                    true, // Show the button to center the map on the current location
               ),
-              markers: markers,
-              myLocationEnabled: true, // Show the blue dot on the map
-              myLocationButtonEnabled:
-                  true, // Show the button to center the map on the current location
             ),
-          ),
-        ],
-      ),
+          ],
+        );
+      }
     );
   }
 }

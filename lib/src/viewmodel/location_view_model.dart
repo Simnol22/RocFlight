@@ -1,23 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/services/location_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
 class LocationViewModel extends ChangeNotifier {
+  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
   final FlightViewModel _flightViewModel;
   final LocationService _locationService = LocationService();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   LocationViewModel(this._flightViewModel);
 
-  Position? _currentPosition;
   LatLng? _rocketLocation;
-
-  Position? get currentPosition => _currentPosition;
   LatLng? get rocketLocation => _rocketLocation;
+
+
+  Position? _currentPosition;
+  Position? get currentPosition => _currentPosition;
+
+  LatLng? get currentLocation => currentPosition != null ? LatLng(currentPosition!.latitude, currentPosition!.longitude): null;
+
+  double? get distanceToRocket => (currentLocation != null && rocketLocation != null) ? calculateDistanceToRocket() : null;
 
   Future<void> fetchUserLocation() async {
     bool hasPermission =
@@ -37,7 +44,7 @@ class LocationViewModel extends ChangeNotifier {
     notifyListeners(); // Notify the UI regardless to update based on available data
   }
 
-  Future<void> fetchLatestRocketLocation() async {
+  void fetchLatestRocketLocation() {
     // Access the current active flight
     Flight? currentFlight = _flightViewModel.currentFlight;
     if (currentFlight == null) {
@@ -47,25 +54,28 @@ class LocationViewModel extends ChangeNotifier {
 
     try {
       // Query the 'rockets' subcollection of the current flight, ordered by timestamp (newest first)
-      var querySnapshot = await _firestore
-          .collection('flights')
-          .doc(currentFlight
-              .uniqueId) // Assuming Flight model has an `id` property
-          .collection('rockets')
-          .orderBy('timestamp', descending: true)
-          .limit(1)
-          .get();
+      collection
+        .doc(_flightViewModel.currentFlight!.uniqueId)
+        .collection("rocket")
+        .orderBy("timestamp", descending: true)
+        .limit(1)
+        .get()
+        .then(
+          (snapshot) {
+            final rocket = (snapshot.size > 0) 
+              ? Rocket.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+              : null;
 
-      if (querySnapshot.docs.isNotEmpty) {
-        var doc = querySnapshot.docs.first;
-        Map<String, dynamic> data = doc.data();
-        double latitude = data['latitude'];
-        double longitude = data['longitude'];
-        _rocketLocation = LatLng(latitude, longitude);
-        notifyListeners(); // Notify listeners for UI update
-      } else {
-        print("No rockets found for the current flight.");
-      }
+            if (rocket != null && rocket.coordinates != null) {
+              var lat = rocket.coordinates!.latitude??0.0;
+              var lon = rocket.coordinates!.longitude??0.0;
+              _rocketLocation = lat == 0.0 || lon == 0.0 ? null : LatLng(lat, lon);
+
+              notifyListeners();
+            }
+          },
+          onError: (error) => print("Listen failed: $error"),
+        );
     } catch (e) {
       print("Error fetching latest rocket location: $e");
     }
@@ -83,4 +93,8 @@ class LocationViewModel extends ChangeNotifier {
       _rocketLocation!.longitude,
     );
   }
+
+  @override
+  // ignore: must_call_super
+  void dispose() {}
 }

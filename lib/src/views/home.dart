@@ -59,8 +59,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
         );
       case 2:
         return ChangeNotifierProvider<LocationViewModel>(
-          create: (context) => LocationViewModel(
-              Provider.of<FlightViewModel>(context, listen: false)),
+          create: (context) => LocationViewModel(flightViewModel),
           child: const FindView(),
         );
       case 3:
