@@ -1,117 +1,89 @@
-import 'dart:async';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:roc_flight/src/model/rocket.dart';
 
-
 class LiveDataViewModel extends ChangeNotifier {
-  final FlightViewModel _flightViewModel;
+  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
+  late final FlightViewModel _flightViewModel;
   int refreshRate = 1;
-  LiveDataViewModel(this._flightViewModel){
-    tryToConnect();
+  bool get hasAnyFlight => _flightViewModel.hasAnyFlight;
+
+  LiveDataViewModel(FlightViewModel flightViewModel) {
+    _flightViewModel = flightViewModel;
+    if (hasAnyFlight) {
+      _listenToFlightUpdates(_flightViewModel.currentFlight!.uniqueId);
+    }
   }
 
   Flight? get currentFlight => _flightViewModel.currentFlight;
-  bool get isConnected => _flightViewModel.isConnected;
+
+  RocketComparator rocketComparator = RocketComparator();
+  Rocket? previousRocket;
   Rocket? currentRocket;
 
-  void tryToConnect(){
-    StreamSubscription subscription = Stream.empty().listen((event) {});
-    var stream = Stream.periodic(Duration(seconds: refreshRate));
-    subscription = stream.listen((event) { 
-        print("Trying to connect... $isConnected");
-        if (isConnected){
-          print("i am conected");
-          subscription.cancel();
-          innitLiveData();
-        }
-    });
-  }
-  void innitLiveData(){
-    print("init live data");
-    print("is connected: $isConnected");
-    if (isConnected){
-      print("i am conected");
-       Stream.periodic(Duration(seconds: refreshRate)).listen((event) { 
-        currentRocket = _flightViewModel.fetchLastValue();
-        notifyListeners();
-      });
+  void _listenToFlightUpdates(String? documentId) {
+    if (documentId?.isNotEmpty ?? false) {
+      final ref = collection.doc(documentId).collection("rocket");
+
+      ref
+      .orderBy("timestamp", descending: true)
+      .limit(1)
+      .snapshots()
+      .listen(
+        (snapshot) {
+          final rocket = (snapshot.size > 0) 
+            ? Rocket.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+            : null;
+
+          previousRocket = currentRocket;
+
+          if (rocket != null) {
+            currentRocket = rocket;
+            notifyListeners();
+          }
+        },
+        onError: (error) => print("Listen failed: $error"),
+      );
     }
   }
-  Stream<bool> isConnectedStream(){
-    return Stream<bool>.periodic(Duration(seconds: refreshRate), (x) => isConnected);
-  }
-  Stream<double> altitudeStream(){
-    return Stream<double>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.altitude ?? 0.0);
-  }
-  Stream<double> altitudeGPSStream(){
-    return Stream<double>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.altitudeGPS ?? 0.0);
-  }
-  Stream<double> verticalVelocityStream(){
-    return Stream<double>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.verticalVelocity ?? 0.0);
-  }
-  Stream<Vector3> accelerationStream(){
-    return Stream<Vector3>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.acceleration ?? Vector3(0,0,0));
-  }
-  Stream<Vector3> gyroscopeStream(){
-    return Stream<Vector3>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.gyroscope ?? Vector3(0,0,0));
-  }
-  Stream<Vector3> velocityStream(){
-    return Stream<Vector3>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.velocity ?? Vector3(0,0,0));
-  }
-  Stream<Geopoint> coordinatesStream(){
-    return Stream<Geopoint>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.coordinates ?? Geopoint(0,0));
-  }
-  Stream<int> batteryStream(){
-    return Stream<int>.periodic(Duration(seconds: refreshRate), (x) => currentRocket?.batteryLevel ?? 0);
+
+  bool get isConnected {
+    return hasAnyFlight;
   }
 
-
-  bool get mockIsConnected {
-    return true;
-  }
-
-  String get  mockRocketStatus {
+  String get status {
     return 'Launched';
   }
 
-  double get mockApogeeAltitude {
-    return 10000;
+  Vector3 get gyroscope => currentRocket?.gyroscope ?? Vector3(0,0,0);
+  Geopoint get coordinates => currentRocket?.coordinates ?? Geopoint(0,0);
+  Vector3 get acceleration => currentRocket?.acceleration ?? Vector3(0,0,0);
+
+  int get batteryLevel => currentRocket?.batteryLevel ?? 0;
+
+  double get altitude => currentRocket?.altitude ?? 0.0;
+  double get altitudeGPS => currentRocket?.altitudeGPS ?? 0.0;
+
+  Vector3 get velocity => currentRocket?.velocity ?? Vector3(0,0,0);
+  double get verticalVelocity => currentRocket?.verticalVelocity ?? 0.0;
+
+  double get mockCurrentRollRate => 20;
+  double get mockApogeeAltitude => 10000;
+  double get mockMaxRollRate => 30;
+  double get mockMaxVelocity => 200;
+  double get mockMaxAcceleration => 20;
+
+  // Used for UI animations
+  bool isValueDifferent<T>(T? Function(Rocket) attributeGetter) {
+    rocketComparator.previousRocket = previousRocket;
+    rocketComparator.currentRocket = currentRocket;
+    return rocketComparator.compareAttribute(attributeGetter);
   }
 
-  double get mockCurrentAltitude {
-    return 5000;
-  }
-
-  double get mockCurrentVelocity {
-    return 100;
-  }
-
-  double get mockCurrentAcceleration {
-    return 10;
-  }
-
-  double get mockCurrentRollRate {
-    return 20;
-  }
-
-  double get mockMaxRollRate {
-    return 30;
-  }
-
-  double get mockMaxVelocity {
-    return 200;
-  }
-
-  double get mockMaxAcceleration {
-    return 20;
-  }
-
-  int get mockBatteryLevel {
-    return 80;
-  }
+  @override
+  // ignore: must_call_super
+  void dispose() {}
 }

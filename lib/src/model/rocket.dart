@@ -26,6 +26,24 @@ class Rocket {
       this.batteryLevel,
       this.timestamp});
 
+  static Rocket fromFirestore(String id, Object? raw) {
+    Map<String, dynamic> data = raw as Map<String, dynamic>;
+
+    return Rocket(
+      rocketID: id,
+      altitude: data['altitude'],
+      altitudeGPS: data['altitudeGPS'],
+      coordinates: data['coordinates'] != null ? Geopoint.fromJson(data['coordinates']) : null,
+      acceleration: data['acceleration'] != null ? Vector3.fromMap(data['acceleration']) : null,
+      gyroscope: data['gyroscope'] != null ? Vector3.fromMap(data['gyroscope']) : null,
+      velocity: data['velocity'] != null ? Vector3.fromMap(data['velocity']) : null,
+      verticalVelocity: data['verticalVelocity'],
+      GPSVelocity: data['GPSVelocity'],
+      batteryLevel: data['batteryLevel'],
+      timestamp: (data['timestamp'] as Timestamp).toDate()
+    );
+  }
+
   Rocket.fromJson(Map<String, dynamic>? json) {
     rocketID = json?['rocketID'];
     altitude = json?['altitude'];
@@ -113,5 +131,17 @@ class Vector3 {
       map['y'],
       map['z'],
     );
+  }
+}
+
+class RocketComparator {
+  Rocket? previousRocket;
+  Rocket? currentRocket;
+
+  bool compareAttribute<T>(T? Function(Rocket) attributeGetter) {
+    final T? previousValue = previousRocket != null ? attributeGetter(previousRocket!) : null;
+    final T? currentValue = currentRocket != null ? attributeGetter(currentRocket!) : null;
+
+    return previousValue != currentValue;
   }
 }
