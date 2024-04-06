@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:roc_flight/src/components/custom_card.dart';
 import 'package:roc_flight/src/viewmodel/location_view_model.dart';
 
 class FindView extends StatefulWidget {
@@ -63,27 +64,24 @@ class _FindViewState extends State<FindView> {
         return Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: Card(
-                child: ListTile(
-                  title: const Text('Rocket Location'),
-                  subtitle: Text(
-                    viewModel.rocketLocation != null
-                        ? 'Lat: ${viewModel.rocketLocation?.latitude} Lon: ${viewModel.rocketLocation?.longitude}${viewModel.distanceToRocket != null ? '\nDistance: ${viewModel.distanceToRocket!.toStringAsFixed(2)}m' : ''}'
-                        : 'Rocket location not available',
-                  ),
-                  trailing: IconButton(
-                    icon: const Icon(Icons.refresh),
-                    onPressed: () {
-                      viewModel.fetchUserLocation();
-                      viewModel.fetchLatestRocketLocation();
-                      refreshMapAsync();
-                    },
-                  )
-                ),
+            CustomCard(
+              title: "Rocket Location", 
+              trailing: IconButton(
+                icon: const Icon(Icons.refresh),
+                onPressed: () {
+                  viewModel.fetchUserLocation();
+                  viewModel.fetchLatestRocketLocation();
+                  refreshMapAsync();
+                },
               ),
+              children: Text(
+                viewModel.rocketLocation != null
+                    ? 'Lat: ${viewModel.rocketLocation?.latitude} Lon: ${viewModel.rocketLocation?.longitude}${viewModel.distanceToRocket != null ? '\nDistance: ${viewModel.distanceToRocket!.toStringAsFixed(2)}m' : ''}'
+                    : 'location unavailable',
+              ),
+              
             ),
+            
             Expanded(
               child: GoogleMap(
                 onMapCreated: (GoogleMapController controller) {
