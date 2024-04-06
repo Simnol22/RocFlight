@@ -32,8 +32,9 @@ class FlightViewModel extends ChangeNotifier {
   Rocket? fetchLastValue(){
     if (rocketCollection != null) {
       rocketCollection?.orderBy('timestamp', descending: true).limit(1).get().then((value) {
+
       if (value.docs.isNotEmpty) {
-        return Rocket.fromJson(value.docs[0] as Map<String, dynamic>);
+        return Rocket.fromJson(value.docs[0].data() as Map<String, dynamic>?);
       }
     });
     }

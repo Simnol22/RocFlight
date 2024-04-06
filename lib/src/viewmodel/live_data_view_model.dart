@@ -12,13 +12,25 @@ class LiveDataViewModel extends ChangeNotifier {
   final FlightViewModel _flightViewModel;
   int refreshRate = 1;
   LiveDataViewModel(this._flightViewModel){
-    innitLiveData();
+    tryToConnect();
   }
 
   Flight? get currentFlight => _flightViewModel.currentFlight;
   bool get isConnected => _flightViewModel.isConnected;
   Rocket? currentRocket;
 
+  void tryToConnect(){
+    StreamSubscription subscription = Stream.empty().listen((event) {});
+    var stream = Stream.periodic(Duration(seconds: refreshRate));
+    subscription = stream.listen((event) { 
+        print("Trying to connect... $isConnected");
+        if (isConnected){
+          print("i am conected");
+          subscription.cancel();
+          innitLiveData();
+        }
+    });
+  }
   void innitLiveData(){
     print("init live data");
     print("is connected: $isConnected");
