@@ -16,7 +16,7 @@ enum rocketState { INIT, STANDBY, ASCENT, DESCENT, LANDING, RECOVERY }
 class RocketViewModel extends ChangeNotifier {
   CollectionReference rocketCollection = FirebaseFirestore.instance.collection('flights');
 
-  late Timer _periodicDataSenderTimer;
+  Timer? _periodicDataSenderTimer;
 
   Rocket rocket = Rocket();
   Flight? flight;
@@ -97,7 +97,7 @@ class RocketViewModel extends ChangeNotifier {
   }
 
   stopFlight() {
-    _periodicDataSenderTimer.cancel();
+    _periodicDataSenderTimer?.cancel();
   }
 
 

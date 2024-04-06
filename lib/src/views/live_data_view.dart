@@ -139,6 +139,7 @@ class _AnimatedText extends StatefulWidget {
 
 class _AnimatedTextState extends State<_AnimatedText> {
   Color? _currentColor;
+  late Timer timer;
 
   @override
   void initState() {
@@ -155,11 +156,23 @@ class _AnimatedTextState extends State<_AnimatedText> {
   }
 
   void _startAnimation() {
-    setState(() { _currentColor = widget.color; });
 
-    if (_currentColor != null) {
-      Timer(widget.duration, () { setState(() { _currentColor = null; }); });
-    }
+    try {
+      setState(() { _currentColor = widget.color; });
+
+      if (_currentColor != null) {
+        timer = Timer(widget.duration, () { 
+          timer.isActive ? setState(() { _currentColor = null; }) : null; 
+        });
+      }
+    } catch(e) {}
+    
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    timer.cancel();
   }
 
   @override

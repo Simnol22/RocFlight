@@ -29,24 +29,24 @@ class LiveDataViewModel extends ChangeNotifier {
       final ref = collection.doc(documentId).collection("rocket");
 
       ref
-      .orderBy("timestamp", descending: true)
-      .limit(1)
-      .snapshots()
-      .listen(
-        (snapshot) {
-          final rocket = (snapshot.size > 0) 
-            ? Rocket.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
-            : null;
+        .orderBy("timestamp", descending: true)
+        .limit(1)
+        .snapshots()
+        .listen(
+          (snapshot) {
+            final rocket = (snapshot.size > 0) 
+              ? Rocket.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+              : null;
 
-          previousRocket = currentRocket;
+            previousRocket = currentRocket;
 
-          if (rocket != null) {
-            currentRocket = rocket;
-            notifyListeners();
-          }
-        },
-        onError: (error) => print("Listen failed: $error"),
-      );
+            if (rocket != null) {
+              currentRocket = rocket;
+              notifyListeners();
+            }
+          },
+          onError: (error) => print("Listen failed: $error"),
+        );
     }
   }
 
