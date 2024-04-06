@@ -54,7 +54,6 @@ class FlightViewModel extends ChangeNotifier {
         .then((value) {
           flight = entry;
           notifyListeners();
-          startPeriodicRocketDataSender();
         });
     }).catchError((error) {
       print(error);
@@ -72,7 +71,10 @@ class FlightViewModel extends ChangeNotifier {
       collection
         .doc(flight?.uniqueId)
         .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-        .then((value) => notifyListeners());
+        .then((value) {
+          startPeriodicRocketDataSender();
+          notifyListeners();
+        });
     }
   }
 
@@ -109,7 +111,7 @@ class FlightViewModel extends ChangeNotifier {
 
     collection
       .where('code', isEqualTo: code)
-      .where('status', isNotEqualTo: FlightStatus.ongoing.index)
+      .where('status', isNotEqualTo: FlightStatus.ended.index)
       .limit(1)
       .get()
       .then((snapshot) {
@@ -140,8 +142,19 @@ class FlightViewModel extends ChangeNotifier {
     return false;
   }
 
-  Future<bool> amITheFlightLauncher() async {
+  bool disconnectFromFlight() {
+    if (flight != null) {
+      flight = null;
+      notifyListeners();
+      rocketViewModel?.stopFlight();
+    }
+    return true;
+  }
+
+  Future<bool?> amITheFlightLauncher() async {
     var id = await fetchlauncherUid();
+
+    if (flight == null) { return null; }
 
     return (flight != null && flight?.launcherId == id);
   }

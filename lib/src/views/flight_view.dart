@@ -74,11 +74,36 @@ class FlightView extends StatefulWidget {
 
 class FlightViewState extends State<FlightView> {
   FlightMode? _selectedFlightMode = FlightMode.operator;
+  FlightMode? userCurrentMode;
+
+  @override
+  void initState() {
+    super.initState();
+    updateSelectedFlightMode();
+  }
 
   void _onFlightModeChanged(FlightMode? mode) {
-    setState(() {
-      _selectedFlightMode = mode;
-    });
+    final viewModel = Provider.of<FlightViewModel>(context, listen: false);
+
+    viewModel.amITheFlightLauncher()
+      .then((amILauncher) {
+        setState(() { 
+          userCurrentMode = amILauncher == null ? null : amILauncher ? FlightMode.launcher : FlightMode.operator;
+          _selectedFlightMode = mode;
+        });
+      });
+  }
+
+  void updateSelectedFlightMode() {
+    final viewModel = Provider.of<FlightViewModel>(context, listen: false);
+
+    viewModel.amITheFlightLauncher()
+      .then((amILauncher) {
+        setState(() {
+          userCurrentMode = amILauncher == null ? null : amILauncher ? FlightMode.launcher : FlightMode.operator;
+          _selectedFlightMode = amILauncher??false ? FlightMode.launcher : FlightMode.operator; 
+        });
+      });
   }
 
   @override
@@ -115,11 +140,14 @@ class FlightViewState extends State<FlightView> {
                         ? _OperatorModeWidget(
                             flight: value.flight,
                             flightViewModel: value,
+                            userMode: userCurrentMode,
                             onConnectPressed: (code) => value.connectToFlightByCode(code),
+                            onDisconnectPressed: () => value.disconnectFromFlight(),
                           )
                         : _LauncherModeWidget(
                             flight: value.flight,
                             flightViewModel: value,
+                            userMode: userCurrentMode,
                           ),
                   ],
                 ),
@@ -137,9 +165,11 @@ class _LauncherModeWidget extends StatefulWidget {
   const _LauncherModeWidget({
     required this.flight,
     required this.flightViewModel,
+    this.userMode
   });
 
   final Flight? flight;
+  final FlightMode? userMode;
   final FlightViewModel flightViewModel;
 
   @override
@@ -158,7 +188,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
   @override
   Widget build(BuildContext context) {
     return Column(children: [
-      FutureBuilder<bool>(
+      FutureBuilder<bool?>(
         future: widget.flightViewModel.amITheFlightLauncher(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -189,6 +219,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           ],
         ),
       ),
+
       CustomCard(
         title: "Controls",
         children: Column(
@@ -196,7 +227,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: _hasStartedFlight() ? null : () => {widget.flightViewModel.startFlight()},
+                onPressed: _hasStartedFlight() || (widget.userMode == FlightMode.operator) ? null : () => {widget.flightViewModel.startFlight()},
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red,
                   disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
@@ -209,7 +240,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                onPressed: !_hasActiveFlight() ? null : () => {widget.flightViewModel.endFlight()},
+                onPressed: !_hasActiveFlight() || (widget.userMode == FlightMode.operator) ? null : () => {widget.flightViewModel.endFlight()},
                 style: ElevatedButton.styleFrom(
                   disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
                 ),
@@ -229,10 +260,14 @@ class _OperatorModeWidget extends StatefulWidget {
     required this.flight,
     required this.flightViewModel,
     required this.onConnectPressed,
+    required this.onDisconnectPressed,
+    this.userMode
   });
 
   final Flight? flight;
+  final FlightMode? userMode;
   final FlightViewModel flightViewModel;
+  final bool Function() onDisconnectPressed;
   final bool Function(String flightCode) onConnectPressed;
 
   @override
@@ -250,11 +285,15 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
     widget.onConnectPressed(flightCode);
   }
 
+  void _onDisconnectFlight() {
+    widget.onDisconnectPressed();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
-        FutureBuilder<bool>(
+        FutureBuilder<bool?>(
           future: widget.flightViewModel.amITheFlightLauncher(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
@@ -270,6 +309,7 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
             children: [
               TextField(
                 enabled: !_hasActiveFlight(),
+                controller: _hasActiveFlight() && widget.userMode == FlightMode.operator ? TextEditingController(text: widget.flightViewModel.currentFlight?.code??"") : null,
                 onChanged: (value) {
                   setState(() {
                     flightCode = value;
@@ -280,16 +320,29 @@ class _OperatorModeWidgetState extends State<_OperatorModeWidget> {
                 decoration: const InputDecoration(labelText: 'Code'),
               ),
               const SizedBox(height: 8),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _hasActiveFlight() ? null : () => {_onTryConnectToFlight()},
-                  style: ElevatedButton.styleFrom(
-                    disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+              if (_hasActiveFlight() && widget.userMode == FlightMode.operator)
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => {_onDisconnectFlight()},
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red,
+                      disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    ),
+                    child: const Text('Disconnect'),
                   ),
-                  child: const Text('Connect'),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _hasActiveFlight() || widget.userMode == FlightMode.launcher ? null : () => {_onTryConnectToFlight()},
+                    style: ElevatedButton.styleFrom(
+                      disabledBackgroundColor: Theme.of(context).colorScheme.inversePrimary,
+                    ),
+                    child: const Text('Connect'),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
