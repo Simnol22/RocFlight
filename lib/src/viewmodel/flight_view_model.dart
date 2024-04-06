@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
+import 'package:roc_flight/src/model/rocket.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:roc_flight/src/services/sensors.dart';
 import 'package:roc_flight/src/services/storage_service.dart';
@@ -10,22 +11,35 @@ import 'package:roc_flight/src/viewmodel/rocket_view_model.dart';
 
 class FlightViewModel extends ChangeNotifier {
   final StorageService _storageService = StorageService();
-  CollectionReference collection =
-      FirebaseFirestore.instance.collection('flights');
-
+  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
+  CollectionReference? rocketCollection;
   
   Flight? flight; // Represent the current active flight (regardless of the user mode)
   RocketViewModel? rocketViewModel; // Represent the current active rocket
   String launcherUid = '';
   bool isFlightStarted = false; // for later use
-  
+  bool connected = false;
   // Get the current flight
   Flight? get currentFlight => flight;
 
   // Get the current rocket
   RocketViewModel? get currentRocket => rocketViewModel;
   String? get launcherId => launcherUid;
-  
+  bool get isConnected => connected;
+  FlightViewModel() {
+    print("Completely new flight view model created");
+  }
+  Rocket? fetchLastValue(){
+    if (rocketCollection != null) {
+      rocketCollection?.orderBy('timestamp', descending: true).limit(1).get().then((value) {
+      if (value.docs.isNotEmpty) {
+        return Rocket.fromJson(value.docs[0] as Map<String, dynamic>);
+      }
+    });
+    }
+    return null;
+  } 
+
   void createRocket(){
     rocketViewModel = RocketViewModel();
     rocketViewModel?.activateSensors();
@@ -147,6 +161,8 @@ class FlightViewModel extends ChangeNotifier {
         if (flight != null) {
           //Connected to flight
           print("Connected to flight with code: $code");
+          connected = true;
+          rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
           _addMyselfAsFlightOperator();
           _listenToFlightUpdates(flight?.uniqueId);
           notifyListeners();

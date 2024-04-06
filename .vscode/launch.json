@@ -1,0 +1,43 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "roc_flight",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "roc_flight (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "roc_flight (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        },
+        {
+            "name": "pixel",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "29221FDH2006QE"
+          },
+          {
+            "name": "emulator",
+            "request": "launch",
+            "type": "dart",
+            "deviceId": "Pixel_3a_API_34_extension_level_7_x86_64"
+          }
+    ],
+    "compounds": [
+        {
+          "name": "All Devices",
+          "configurations": ["pixel", "emulator"]
+        }
+      ]
+}

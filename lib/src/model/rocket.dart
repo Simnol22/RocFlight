@@ -7,6 +7,8 @@ class Rocket {
   Vector3? gyroscope;
   Vector3? velocity;
   double? verticalVelocity;
+  double? GPSVelocity;
+  int? batteryLevel;
   DateTime? timestamp;
 
   Rocket(
@@ -18,6 +20,8 @@ class Rocket {
       this.gyroscope,
       this.velocity,
       this.verticalVelocity,
+      this.GPSVelocity,
+      this.batteryLevel,
       this.timestamp});
 
   Rocket.fromJson(Map<String, dynamic> json) {
@@ -35,6 +39,8 @@ class Rocket {
     velocity =
         json['velocity'] != null ? Vector3.fromMap(json['velocity']) : null;
     verticalVelocity = json['verticalVelocity'];
+    GPSVelocity = json['GPSVelocity'];
+    batteryLevel = json['batteryLevel'];
     timestamp = json['timestamp'];
   }
 
@@ -55,6 +61,8 @@ class Rocket {
       data['velocity'] = velocity!.toMap();
     }
     data['verticalVelocity'] = verticalVelocity;
+    data['GPSVelocity'] = GPSVelocity;
+    data['batteryLevel'] = batteryLevel;
     data['timestamp'] = timestamp;
 
     return data;
