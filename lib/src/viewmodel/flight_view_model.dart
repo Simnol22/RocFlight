@@ -29,6 +29,7 @@ class FlightViewModel extends ChangeNotifier {
   RocketViewModel? get currentRocket => rocketViewModel;
 
   void startPeriodicRocketDataSender() {
+    print("Starting periodic rocket data sender");
     rocketViewModel = RocketViewModel();
     rocketViewModel?.activateSensors();
     rocketViewModel?.setupRocket(flight!);
@@ -53,6 +54,7 @@ class FlightViewModel extends ChangeNotifier {
         .set(entry.toFirestoreMap(), SetOptions(merge: true))
         .then((value) {
           flight = entry;
+          startPeriodicRocketDataSender();
           notifyListeners();
         });
     }).catchError((error) {
@@ -63,8 +65,6 @@ class FlightViewModel extends ChangeNotifier {
 
   void startFlight() {
     print("Starting flight");
-
-    rocketViewModel = RocketViewModel();
     if (flight != null) {
       flight?.status = FlightStatus.started;
 
@@ -72,7 +72,7 @@ class FlightViewModel extends ChangeNotifier {
         .doc(flight?.uniqueId)
         .set(flight?.toFirestoreMap(), SetOptions(merge: true))
         .then((value) {
-          startPeriodicRocketDataSender();
+          rocketViewModel?.sendingData = true;
           notifyListeners();
         });
     }

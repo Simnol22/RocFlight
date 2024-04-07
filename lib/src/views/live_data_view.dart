@@ -56,19 +56,21 @@ class LiveDataView extends StatelessWidget {
                     ),
 
                     _buildListTile(
-                      'Apogee altitude ', 
-                      '${viewModel.mockApogeeAltitude} m'
+                      'Max altitude ', 
+                      '${viewModel.maxAltitude} m',
+                      anim: viewModel.isValueDifferent((r) => r.maxAltitude)
                     ),
 
                     _buildListTile(
                       'Vertical velocity ', 
-                      '${viewModel.verticalVelocity.toStringAsFixed(2)} m/s', 
+                      '${viewModel.verticalVelocity.toStringAsFixed(3)} m/s', 
                       anim: viewModel.isValueDifferent((r) => r.verticalVelocity)
                     ),
 
                     _buildListTile(
                       'Max velocity ', 
-                      '${viewModel.mockMaxVelocity.toStringAsFixed(2)} m/s'
+                      '${viewModel.maxVelocity.toStringAsFixed(3)} m/s', 
+                      anim: viewModel.isValueDifferent((r) => r.maxSpeed)
                     ),
 
                     _buildListTile(

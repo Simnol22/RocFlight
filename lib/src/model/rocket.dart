@@ -11,7 +11,10 @@ class Rocket {
   double? verticalVelocity;
   double? GPSVelocity;
   int? batteryLevel;
+  double? maxAltitude;
+  double? maxSpeed;
   DateTime? timestamp;
+ 
 
   Rocket(
       {this.rocketID,
@@ -24,6 +27,8 @@ class Rocket {
       this.verticalVelocity,
       this.GPSVelocity,
       this.batteryLevel,
+      this.maxAltitude,
+      this.maxSpeed,
       this.timestamp});
 
   static Rocket fromFirestore(String id, Object? raw) {
@@ -40,6 +45,8 @@ class Rocket {
       verticalVelocity: data['verticalVelocity'],
       GPSVelocity: data['GPSVelocity'],
       batteryLevel: data['batteryLevel'],
+      maxAltitude: data['maxAltitude'],
+      maxSpeed: data['maxSpeed'],
       timestamp: (data['timestamp'] as Timestamp).toDate()
     );
   }
@@ -61,6 +68,8 @@ class Rocket {
     verticalVelocity = json?['verticalVelocity'];
     GPSVelocity = json?['GPSVelocity'];
     batteryLevel = json?['batteryLevel'];
+    maxAltitude = json?['maxAltitude'];
+    maxSpeed = json?['maxSpeed'];
     timestamp = (json?['timestamp'] as Timestamp).toDate();
   }
 
@@ -83,6 +92,8 @@ class Rocket {
     data['verticalVelocity'] = verticalVelocity;
     data['GPSVelocity'] = GPSVelocity;
     data['batteryLevel'] = batteryLevel;
+    data['maxAltitude'] = maxAltitude;
+    data['maxSpeed'] = maxSpeed;
     data['timestamp'] = timestamp;
 
     return data;
