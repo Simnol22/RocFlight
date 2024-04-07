@@ -72,7 +72,7 @@ class FlightViewModel extends ChangeNotifier {
         .doc(flight?.uniqueId)
         .set(flight?.toFirestoreMap(), SetOptions(merge: true))
         .then((value) {
-          rocketViewModel?.sendingData = true;
+          rocketViewModel?.flightStarted = true;
           notifyListeners();
         });
     }
