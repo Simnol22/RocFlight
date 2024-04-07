@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
@@ -8,10 +9,9 @@ import 'package:roc_flight/src/model/rocket.dart';
 class LiveDataViewModel extends ChangeNotifier {
   CollectionReference collection = FirebaseFirestore.instance.collection('flights');
   late final FlightViewModel _flightViewModel;
-  int refreshRate = 1;
-  bool get hasAnyFlight => _flightViewModel.hasAnyFlight;
 
   LiveDataViewModel(FlightViewModel flightViewModel) {
+    rocketBuffer = [];
     _flightViewModel = flightViewModel;
     if (hasAnyFlight) {
       _listenToFlightUpdates(_flightViewModel.currentFlight!.uniqueId);
@@ -19,8 +19,11 @@ class LiveDataViewModel extends ChangeNotifier {
   }
 
   Flight? get currentFlight => _flightViewModel.currentFlight;
+  bool get hasAnyFlight => _flightViewModel.hasAnyFlight;
 
-  RocketComparator rocketComparator = RocketComparator();
+  final RocketComparator rocketComparator = RocketComparator();
+
+  List<Rocket> rocketBuffer = [];
   Rocket? previousRocket;
   Rocket? currentRocket;
 
@@ -42,6 +45,10 @@ class LiveDataViewModel extends ChangeNotifier {
 
             if (rocket != null) {
               currentRocket = rocket;
+
+              rocketBuffer.add(currentRocket!);
+              if (rocketBuffer.length > 5) { rocketBuffer.removeAt(0); }
+
               notifyListeners();
             }
           },
@@ -70,11 +77,11 @@ class LiveDataViewModel extends ChangeNotifier {
   Vector3 get velocity => currentRocket?.velocity ?? Vector3(0,0,0);
   double get verticalVelocity => currentRocket?.verticalVelocity ?? 0.0;
 
-  double get mockCurrentRollRate => 20;
-  double get mockApogeeAltitude => 10000;
-  double get mockMaxRollRate => 30;
-  double get mockMaxVelocity => 200;
-  double get mockMaxAcceleration => 20;
+  double get mockCurrentRollRate => 0;
+  double get mockApogeeAltitude => 0;
+  double get mockMaxRollRate => 0;
+  double get mockMaxVelocity => 0;
+  double get mockMaxAcceleration => 0;
 
   // Used for UI animations
   bool isValueDifferent<T>(T? Function(Rocket) attributeGetter) {
@@ -82,6 +89,13 @@ class LiveDataViewModel extends ChangeNotifier {
     rocketComparator.currentRocket = currentRocket;
     return rocketComparator.compareAttribute(attributeGetter);
   }
+
+  List<double> get altitudeBuffer => rocketBuffer.map((r) => r.altitude??0.0).toList();
+  List<double> get altitudeGPSBuffer => rocketBuffer.map((r) => r.altitudeGPS??0.0).toList();
+
+  List<double> get accelerationXBuffer => rocketBuffer.map((r) => r.acceleration?.x??0.0).toList();
+  List<double> get accelerationYBuffer => rocketBuffer.map((r) => r.acceleration?.y??0.0).toList();
+  List<double> get accelerationZBuffer => rocketBuffer.map((r) => r.acceleration?.z??0.0).toList();
 
   @override
   // ignore: must_call_super
