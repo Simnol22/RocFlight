@@ -76,11 +76,10 @@ class LiveDataViewModel extends ChangeNotifier {
 
   Vector3 get velocity => currentRocket?.velocity ?? Vector3(0,0,0);
   double get verticalVelocity => currentRocket?.verticalVelocity ?? 0.0;
-
+  double get maxVelocity => currentRocket?.maxSpeed ?? 0.0;
+  double get maxAltitude => currentRocket?.maxAltitude ?? 0.0;
   double get mockCurrentRollRate => 0;
-  double get mockApogeeAltitude => 0;
   double get mockMaxRollRate => 0;
-  double get mockMaxVelocity => 0;
   double get mockMaxAcceleration => 0;
 
   // Used for UI animations
