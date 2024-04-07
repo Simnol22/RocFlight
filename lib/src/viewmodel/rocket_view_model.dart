@@ -29,6 +29,7 @@ class RocketViewModel extends ChangeNotifier {
   double? maxSpeed = 0.0;
 
   bool sendingData = false;
+  Duration dbRefreshRate = Duration(seconds: 3);
 
   double accelXFiltered = 0.0;
   double accelYFiltered = 0.0;
@@ -101,10 +102,20 @@ class RocketViewModel extends ChangeNotifier {
   }
 
  saveDataToDB() {
-    _periodicDataSenderTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
+    _periodicDataSenderTimer = Timer.periodic(dbRefreshRate, (timer) {
+      print("sending data timer 1");
       if(sendingData){
-        sendData();
+        createNewTimer(Duration(seconds: 1));
+        //sendData();
+
       }
+    });
+  }
+  
+  createNewTimer(time){
+    _periodicDataSenderTimer?.cancel();
+    _periodicDataSenderTimer = Timer.periodic(time, (timer) {
+      print("sending data timer 2");
     });
   }
 
