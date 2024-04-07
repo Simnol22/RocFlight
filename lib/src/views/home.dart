@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
+import 'package:roc_flight/src/viewmodel/history_view_model.dart';
 import 'package:roc_flight/src/viewmodel/live_data_view_model.dart';
 import 'package:roc_flight/src/views/find_view.dart';
 import 'package:roc_flight/src/views/flight_view.dart';
@@ -63,7 +64,10 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
           child: const FindView(),
         );
       case 3:
-        return const HistoryView();
+        return ChangeNotifierProvider<HistoryViewModel>(
+          create: (context) => HistoryViewModel(),
+          child: const HistoryView(),
+        );
       default:
         return ChangeNotifierProvider<FlightViewModel>(
           create: (context) => flightViewModel,
@@ -77,7 +81,9 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => flightViewModel),
-        ChangeNotifierProvider(create: (_) => LiveDataViewModel(flightViewModel)),
+        ChangeNotifierProvider(
+            create: (_) => LiveDataViewModel(flightViewModel)),
+        ChangeNotifierProvider(create: (_) => HistoryViewModel()),
         // Add other global providers here if necessary
       ],
       child: Scaffold(
