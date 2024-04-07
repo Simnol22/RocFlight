@@ -104,7 +104,7 @@ class HomeViewState extends State<HomeView> with TickerProviderStateMixin {
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.satellite_alt),
-              label: 'LiveData',
+              label: 'Live data',
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.map),
