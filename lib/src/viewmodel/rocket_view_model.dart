@@ -24,6 +24,12 @@ class RocketViewModel extends ChangeNotifier {
   DateTime? lastPressTime;
   double? lastAltitude;
 
+  //Calculating maximum values
+  double? maxAltitude = 0.0;
+  double? maxSpeed = 0.0;
+
+  bool sendingData = false;
+
   double accelXFiltered = 0.0;
   double accelYFiltered = 0.0;
   double accelZFiltered = 0.0;
@@ -71,6 +77,10 @@ class RocketViewModel extends ChangeNotifier {
       calculateVerticalVelocity(rocket.timestamp);
       lastPressTime = rocket.timestamp;
       lastAltitude = rocket.altitude;
+      if (rocket.altitude! > maxAltitude!) {
+        maxAltitude = rocket.altitude;
+        rocket.maxAltitude = maxAltitude;
+      }
     });
     //Make sure you get permission
     locationService.checkAndRequestLocationPermissions().then((value) => 
@@ -92,7 +102,9 @@ class RocketViewModel extends ChangeNotifier {
 
  saveDataToDB() {
     _periodicDataSenderTimer = Timer.periodic(const Duration(seconds: 3), (timer) {
-      sendData();
+      if(sendingData){
+        sendData();
+      }
     });
   }
 
@@ -124,6 +136,10 @@ class RocketViewModel extends ChangeNotifier {
     if(lastPressTime != null && lastAltitude != null){
       var deltaT = time.difference(lastPressTime).inMicroseconds / Duration.microsecondsPerSecond;
       rocket.verticalVelocity = (rocket.altitude! - lastAltitude!)*deltaT;
+      if(rocket.verticalVelocity! > maxSpeed!){
+        maxSpeed = rocket.verticalVelocity;
+        rocket.maxSpeed = maxSpeed;
+      }
     }
   }
 
