@@ -11,13 +11,14 @@ import 'package:battery_info/model/android_battery_info.dart';
 import 'dart:math';
 import 'dart:io';
 
-enum rocketState { INIT, STANDBY, ASCENT, DESCENT, LANDING, RECOVERY }
+enum rocketState { INIT, STANDBY, ASCENT, DESCENT, RECOVERY }
+double FLIGHT_ALTITUDE_TRIGGER = 50.0;
 
 class RocketViewModel extends ChangeNotifier {
   CollectionReference rocketCollection = FirebaseFirestore.instance.collection('flights');
 
   Timer? _periodicDataSenderTimer;
-
+  Timer? _periodicFlightLoopTimer;
   Rocket rocket = Rocket();
   Flight? flight;
   DateTime? lastAccelTime;
@@ -28,8 +29,9 @@ class RocketViewModel extends ChangeNotifier {
   double? maxAltitude = 0.0;
   double? maxSpeed = 0.0;
 
-  bool sendingData = false;
-  Duration dbRefreshRate = Duration(seconds: 3);
+  bool flightStarted = false;
+  bool flightCalibrated = false;
+  double groundAltitude = 0.0;
 
   double accelXFiltered = 0.0;
   double accelYFiltered = 0.0;
@@ -41,11 +43,13 @@ class RocketViewModel extends ChangeNotifier {
 
   double alpha = 0.8;
   
+  var currentState = rocketState.INIT;
+  
   void setupRocket(Flight? currentFlight) {
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
     rocket.coordinates = Geopoint(0.0, 0.0); //For testing fetching location
-    saveDataToDB();
+    flightLoop(const Duration(milliseconds: 500));
   }
 
   void sendData() {
@@ -53,7 +57,6 @@ class RocketViewModel extends ChangeNotifier {
     rocketCollection.add(rocket.toJson()).then((value) {
       rocket.rocketID = value.id;
     });
-    print("rocket sent !");
   }
 
    void activateSensors(){
@@ -98,28 +101,28 @@ class RocketViewModel extends ChangeNotifier {
   }
 
   Stream<double> getAltitudeStream(){
-    return Stream<double>.periodic(Duration(seconds: 1), (x) => rocket.altitude!);
-  }
-
- saveDataToDB() {
-    _periodicDataSenderTimer = Timer.periodic(dbRefreshRate, (timer) {
-      print("sending data timer 1");
-      if(sendingData){
-        createNewTimer(Duration(seconds: 1));
-        //sendData();
-
-      }
-    });
+    return Stream<double>.periodic(const Duration(seconds: 1), (x) => rocket.altitude!);
   }
   
-  createNewTimer(time){
-    _periodicDataSenderTimer?.cancel();
-    _periodicDataSenderTimer = Timer.periodic(time, (timer) {
-      print("sending data timer 2");
+  flightLoop(time){
+    if (_periodicFlightLoopTimer != null){
+      _periodicFlightLoopTimer?.cancel();
+    }
+    _periodicFlightLoopTimer = Timer.periodic(time, (timer) {
+      verifyStatus();
     });
   }
 
+  dataLoop(time){
+    if (_periodicDataSenderTimer != null){
+      _periodicDataSenderTimer?.cancel();
+    }
+    _periodicDataSenderTimer = Timer.periodic(time, (timer) {
+      sendData();
+    });
+  }
   stopFlight() {
+    _periodicFlightLoopTimer?.cancel();
     _periodicDataSenderTimer?.cancel();
   }
 
@@ -154,33 +157,45 @@ class RocketViewModel extends ChangeNotifier {
     }
   }
 
-  void runFlight() {
-    var currentState = rocketState.INIT;
-    while(true){
-      switch(currentState){
-        case rocketState.INIT: //initialisation
-          //Calibration and stuff
-          break;
-        case rocketState.STANDBY: //Standby
-          //Calibration terminated, verify if launch detected
-          
-          break;
-        case rocketState.ASCENT: // Ascent
-          //Altitude climbing, check for apogee and modify senging rate
-          break;
-        case rocketState.DESCENT: // Descent
-          //Apogee reached, altitude decreasing, check for landing
-          break;
-        case rocketState.LANDING: // Landing
-          //Altitude decreasing, check for landing
-          break;
-        case rocketState.RECOVERY: // Recovery
-          //Landing detected, modify sending rate
-          break;
-        default:
-          break;
-      }
+  void calibrateRocket(){
+    if (rocket.altitude != null && !flightCalibrated){
+      groundAltitude = rocket.altitude!;
+      flightCalibrated = true;
     }
   }
 
+  void verifyStatus() {
+      switch(currentState){
+        case rocketState.INIT: //initialisation
+          calibrateRocket();
+          if (flightStarted && flightCalibrated){
+            dataLoop(const Duration(seconds: 3));
+            currentState = rocketState.STANDBY;
+          }
+          break;
+        case rocketState.STANDBY: //Standby
+          if ((rocket.altitude! - groundAltitude) > FLIGHT_ALTITUDE_TRIGGER){ //Launch detected :) 
+            currentState = rocketState.ASCENT;
+            dataLoop(const Duration(seconds: 1));
+          }
+          break;
+        case rocketState.ASCENT: // Ascent
+          if (rocket.verticalVelocity! < 0){ // Vitesse négative -> apogée
+            currentState = rocketState.DESCENT;
+          }
+          break;
+        case rocketState.DESCENT: // Descent
+          if (rocket.verticalVelocity! >= 0){ // Vitesse n'est plus négative -> atterissage
+            currentState = rocketState.RECOVERY;
+            dataLoop(const Duration(seconds: 5)); // Diminuer le taux d'envoi de données
+          }          
+          break;
+        case rocketState.RECOVERY: // Recovery
+            // Might implement something in the future, but for now do nothing. Wait for rocketeer to retrieve rocket
+          break;
+        default:
+          currentState = rocketState.INIT;
+          break;
+      }
+    }
 }
