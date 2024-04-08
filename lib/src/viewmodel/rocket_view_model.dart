@@ -32,26 +32,16 @@ class RocketViewModel extends ChangeNotifier {
   bool flightStarted = false;
   bool flightCalibrated = false;
   double groundAltitude = 0.0;
-
-  double accelXFiltered = 0.0;
-  double accelYFiltered = 0.0;
-  double accelZFiltered = 0.0;
-
-  double gravity_x = 0.0;
-  double gravity_y = 0.0;
-  double gravity_z = 0.0;
-
-  double alpha = 0.8;
   
   var currentState = rocketState.INIT;
   
   void setupRocket(Flight? currentFlight) {
     flight = currentFlight;
     rocketCollection = FirebaseFirestore.instance.collection('flights').doc(flight?.uniqueId).collection('rocket');
-    rocket.coordinates = Geopoint(0.0, 0.0); //For testing fetching location
-    flightLoop(const Duration(milliseconds: 500));
+    flightLoop(const Duration(milliseconds: 500)); //Check status every 500ms, might want to go faster in a real flight.
   }
 
+  //Sends data to the DB
   void sendData() {
     rocket.timestamp = DateTime.now();
     rocketCollection.add(rocket.toJson()).then((value) {
@@ -59,6 +49,7 @@ class RocketViewModel extends ChangeNotifier {
     });
   }
 
+  // Calling this function activate the sensors, which will start feeding a rocket object with the current data
    void activateSensors(){
     print("activating sensors");
     SensorService sensorService = SensorService();
@@ -99,11 +90,12 @@ class RocketViewModel extends ChangeNotifier {
       });
     });
   }
-
+  //Send altitude data to the flight UI. Just to make sure the flight operator knows it's working
   Stream<double> getAltitudeStream(){
-    return Stream<double>.periodic(const Duration(seconds: 1), (x) => rocket.altitude!);
+    return Stream<double>.periodic(const Duration(seconds: 3), (x) => rocket.altitude!);
   }
   
+  //Flight loop, checks the status of the rocket every x milliseconds
   flightLoop(time){
     if (_periodicFlightLoopTimer != null){
       _periodicFlightLoopTimer?.cancel();
@@ -113,6 +105,7 @@ class RocketViewModel extends ChangeNotifier {
     });
   }
 
+  //Data loop, sends data to the DB every x milliseconds
   dataLoop(time){
     if (_periodicDataSenderTimer != null){
       _periodicDataSenderTimer?.cancel();
@@ -134,11 +127,12 @@ class RocketViewModel extends ChangeNotifier {
     rocket.altitude = altitude;
   }
 
-  // À VÉRIFIER SVP ! SUS ! 
+  // Calculating velocity with acceleration * time
   void calculateVelocity(time){
     if(lastAccelTime != null){
       var deltaT = time.difference(lastAccelTime).inMicroseconds / Duration.microsecondsPerSecond;
       rocket.velocity ??= Vector3(0, 0, 0);
+
       rocket.velocity!.x += rocket.acceleration!.x * deltaT;
       rocket.velocity!.y += rocket.acceleration!.y * deltaT;
       rocket.velocity!.z += rocket.acceleration!.z * deltaT;
