@@ -30,6 +30,7 @@ class _FindViewState extends State<FindView> {
     });
   }
 
+  //Refresh the map with the latest rocket location
   Future<void> refreshMapAsync () async {
     final GoogleMapController controller = await _controller.future;
 

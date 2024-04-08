@@ -92,7 +92,7 @@ class RocketViewModel extends ChangeNotifier {
   }
   //Send altitude data to the flight UI. Just to make sure the flight operator knows it's working
   Stream<double> getAltitudeStream(){
-    return Stream<double>.periodic(const Duration(seconds: 3), (x) => rocket.altitude!);
+    return Stream<double>.periodic(const Duration(seconds: 1), (x) => rocket.altitude!);
   }
   
   //Flight loop, checks the status of the rocket every x milliseconds
@@ -163,7 +163,7 @@ class RocketViewModel extends ChangeNotifier {
         case rocketState.INIT: //initialisation
           calibrateRocket();
           if (flightStarted && flightCalibrated){
-            dataLoop(const Duration(seconds: 3));
+            dataLoop(const Duration(seconds: 2));
             currentState = rocketState.STANDBY;
           }
           break;
