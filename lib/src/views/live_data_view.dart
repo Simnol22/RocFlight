@@ -30,6 +30,7 @@ class LiveDataView extends StatelessWidget {
             ),
           ),
         ),
+        //Fetching all the data from the LiveDataViewModel
         body: Consumer<LiveDataViewModel>(
           builder: (context, viewModel, child) {
             return TabBarView(
@@ -226,7 +227,7 @@ class _AnimatedTextState extends State<_AnimatedText> {
       _startAnimation();
     }
   }
-
+  //Little animation for new values
   void _startAnimation() {
 
     try {

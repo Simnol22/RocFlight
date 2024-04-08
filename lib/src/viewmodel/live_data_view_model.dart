@@ -27,6 +27,7 @@ class LiveDataViewModel extends ChangeNotifier {
   Rocket? previousRocket;
   Rocket? currentRocket;
 
+ // fetch the latest rocket data from the database, and add a buffer for wanted values as graph
   void _listenToFlightUpdates(String? documentId) {
     if (documentId?.isNotEmpty ?? false) {
       final ref = collection.doc(documentId).collection("rocket");
