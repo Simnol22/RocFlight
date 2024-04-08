@@ -2,18 +2,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/services/storage_service.dart';
+import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:roc_flight/src/model/flight.dart';
 
 class HistoryViewModel extends ChangeNotifier {
-  final StorageService _storageService = StorageService();
-  CollectionReference collection =
-      FirebaseFirestore.instance.collection('flights');
+  final FlightViewModel _flightViewModel = FlightViewModel();
+  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
   List<Flight> flightHistory = [];
-
+  
+  // We want flight that we have either launched or watched.
   void fetchFlightHistory() {
+    var id = _flightViewModel.myId;
     collection
-        //.where('operatorIds', arrayContains: _storageService.getUserId())
         .where('status', isEqualTo: FlightStatus.ended.index)
+        .where(Filter.or(
+            Filter('operatorIds', arrayContains: id),
+            Filter('launcherId', isEqualTo: id),
+          ))
+        .orderBy('createdAt', descending: true)
         .get()
         .then((value) {
       flightHistory =

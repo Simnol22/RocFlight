@@ -250,6 +250,7 @@ class _LauncherModeWidgetState extends State<_LauncherModeWidget> {
           ],
         ),
       ),
+      //Showing current altitude of Launcher. This is for the launcher to know his sensors are activated
        CustomCard(
                 title: "Altitude",
                 children: StreamBuilder<double>(

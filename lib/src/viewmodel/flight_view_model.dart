@@ -11,7 +11,6 @@ class FlightViewModel extends ChangeNotifier {
   static final FlightViewModel _instance = FlightViewModel._internal();
   factory FlightViewModel() => _instance;
   FlightViewModel._internal();
-  //
 
   final StorageService _storageService = StorageService();
   CollectionReference collection = FirebaseFirestore.instance.collection('flights');
@@ -24,7 +23,7 @@ class FlightViewModel extends ChangeNotifier {
   Flight? get currentFlight => flight;
 
   bool get hasAnyFlight => (flight != null && flight!.uniqueId!.isNotEmpty && flight!.isActive);
-
+  String? myId;
   // Get the current rocket
   RocketViewModel? get currentRocket => rocketViewModel;
 
@@ -35,6 +34,7 @@ class FlightViewModel extends ChangeNotifier {
     rocketViewModel?.setupRocket(flight!);
   }
 
+  // Creates fight, add to database and start sensors
   void createFlight() {
     fetchlauncherUid().then((launcherId) {
       
@@ -63,6 +63,7 @@ class FlightViewModel extends ChangeNotifier {
     });
   }
 
+  // Start the flight
   void startFlight() {
     print("Starting flight");
     if (flight != null) {
@@ -78,6 +79,7 @@ class FlightViewModel extends ChangeNotifier {
     }
   }
 
+  // End the flight
   void endFlight() {
     if (flight != null) {
       flight?.status = FlightStatus.ended;
@@ -94,14 +96,17 @@ class FlightViewModel extends ChangeNotifier {
     print("Ending flight");
   }
 
+  // Get user id in cellphone internal storage. If not there, create one and save it
   Future<String> fetchlauncherUid() async {
     final userId = await _storageService.getUserId();
     if (userId.isEmpty) {
       var id = const Uuid().v1();
       await _storageService.setUserId(const Uuid().v1());
+      myId = id;
       print("No userID, creating random one: $id");
       return id;
     }
+    myId = userId;
     return userId;
   }
 
@@ -153,7 +158,7 @@ class FlightViewModel extends ChangeNotifier {
 
   Future<bool?> amITheFlightLauncher() async {
     var id = await fetchlauncherUid();
-
+    
     if (flight == null) { return null; }
 
     return (flight != null && flight?.launcherId == id);
