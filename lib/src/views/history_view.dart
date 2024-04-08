@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:roc_flight/src/model/rocket.dart';
 import 'package:roc_flight/src/viewmodel/history_view_model.dart';
 
 class HistoryView extends StatelessWidget {
@@ -25,25 +26,25 @@ class HistoryView extends StatelessWidget {
             itemCount: viewModel.flightHistory.length,
             itemBuilder: (context, index) {
               final flight = viewModel.flightHistory[index];
-              return ExpansionTile(
-                title: Text(flight.code ?? 'Unknown Flight'),
-                subtitle: Text(flight.createdAt.toString()),
-                children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: <Widget>[
-                        Text('Code: ${flight.code}'),
-                        Text('Apogee: '),
-                        Text('Duration: '),
-                        Text('Max Speed: '),
-                        Text('Max Altitude: '),
-                        Text('Max Acceleration: '),
-                      ],
-                    ),
-                  ),
-                ],
+              return FutureBuilder<Rocket?>(
+                future: viewModel.fetchLastRocketSnapshot(flight.uniqueId!),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const CircularProgressIndicator();
+                  } else if (snapshot.hasError) {
+                    return Text('Error: ${snapshot.error}');
+                  } else {
+                    // Les données sont disponibles
+                    final rocket = snapshot.data;
+                    return ExpansionTile(
+                        title: Text(flight.code ?? 'Unknown Flight'),
+                        subtitle: Text(flight.createdAt.toString()),
+                        children: <Widget>[
+                          Text('Max Speed: ${rocket?.maxSpeed}'),
+                          Text('Max Altitude: ${rocket?.maxAltitude}'),
+                        ]);
+                  }
+                },
               );
             },
           );
