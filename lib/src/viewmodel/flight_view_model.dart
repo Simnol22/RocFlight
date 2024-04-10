@@ -67,21 +67,23 @@ class FlightViewModel extends ChangeNotifier {
   void startFlight() {
     print("Starting flight");
     if (flight != null) {
-      flight?.status = FlightStatus.started;
-
-      collection
-        .doc(flight?.uniqueId)
-        .set(flight?.toFirestoreMap(), SetOptions(merge: true))
-        .then((value) {
-          rocketViewModel?.flightStarted = true;
-          notifyListeners();
-        });
+      updateFlightModel().then((value) {
+        flight?.status = FlightStatus.started;
+          collection
+            .doc(flight?.uniqueId)
+            .set(flight?.toFirestoreMap(), SetOptions(merge: true))
+            .then((value) {
+              rocketViewModel?.flightStarted = true;
+              notifyListeners();
+            });
+      });
     }
   }
 
   // End the flight
   void endFlight() {
     if (flight != null) {
+      updateFlightModel().then((value) {
       flight?.status = FlightStatus.ended;
 
       collection
@@ -92,6 +94,7 @@ class FlightViewModel extends ChangeNotifier {
           notifyListeners();
           rocketViewModel?.stopFlight();
         });
+      });
     }
     print("Ending flight");
   }
@@ -162,6 +165,14 @@ class FlightViewModel extends ChangeNotifier {
     if (flight == null) { return null; }
 
     return (flight != null && flight?.launcherId == id);
+  }
+
+  Future updateFlightModel() async{
+    if (flight != null) {
+      var doc = await collection.doc(flight?.uniqueId).get();
+      flight = Flight.fromFirestore(doc.id, doc.data());
+      notifyListeners();
+    } 
   }
 
   Future _addMyselfAsFlightOperator() async {
