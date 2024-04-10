@@ -235,7 +235,7 @@ class _AnimatedTextState extends State<_AnimatedText> {
 
       if (_currentColor != null) {
         timer = Timer(widget.duration, () { 
-          timer.isActive ? setState(() { _currentColor = null; }) : null; 
+          setState(() { _currentColor = null; }); 
         });
       }
     } catch(e) {}
