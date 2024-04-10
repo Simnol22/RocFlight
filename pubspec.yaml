@@ -27,7 +27,7 @@ dependencies:
   fluttertoast: ^8.0.8
   path_provider: ^2.1.2
   uuid: ^4.3.3
-  sensors_plus: ^5.0.0
+  sensors_plus: ^4.0.2
   environment_sensors: ^0.3.0
   battery_info: ^1.1.1
   fl_chart: ^0.67.0
