@@ -38,3 +38,6 @@ apps](https://flutter.dev/docs/development/accessibility-and-localization/intern
 - Acceleration is a little weird as well.
 - Save data in phone as csv
 - Export flight as csv
+- Distance in GPS mode weird
+- phone going to sleep. Need to figure out how to run in background !!!!!!
+- Velocity very weird
