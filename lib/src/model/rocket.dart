@@ -13,8 +13,8 @@ class Rocket {
   int? batteryLevel;
   double? maxAltitude;
   double? maxSpeed;
+  double? apogee;
   DateTime? timestamp;
- 
 
   Rocket(
       {this.rocketID,
@@ -29,32 +29,40 @@ class Rocket {
       this.batteryLevel,
       this.maxAltitude,
       this.maxSpeed,
+      this.apogee,
       this.timestamp});
 
   static Rocket fromFirestore(String id, Object? raw) {
     Map<String, dynamic> data = raw as Map<String, dynamic>;
 
     return Rocket(
-      rocketID: id,
-      altitude: data['altitude'],
-      altitudeGPS: data['altitudeGPS'],
-      coordinates: data['coordinates'] != null ? Geopoint.fromJson(data['coordinates']) : null,
-      acceleration: data['acceleration'] != null ? Vector3.fromMap(data['acceleration']) : null,
-      gyroscope: data['gyroscope'] != null ? Vector3.fromMap(data['gyroscope']) : null,
-      velocity: data['velocity'] != null ? Vector3.fromMap(data['velocity']) : null,
-      verticalVelocity: data['verticalVelocity'],
-      GPSVelocity: data['GPSVelocity'],
-      batteryLevel: data['batteryLevel'],
-      maxAltitude: data['maxAltitude'],
-      maxSpeed: data['maxSpeed'],
-      timestamp: (data['timestamp'] as Timestamp).toDate()
-    );
+        rocketID: id,
+        altitude: data['altitude'],
+        altitudeGPS: data['altitudeGPS'],
+        coordinates: data['coordinates'] != null
+            ? Geopoint.fromJson(data['coordinates'])
+            : null,
+        acceleration: data['acceleration'] != null
+            ? Vector3.fromMap(data['acceleration'])
+            : null,
+        gyroscope: data['gyroscope'] != null
+            ? Vector3.fromMap(data['gyroscope'])
+            : null,
+        velocity:
+            data['velocity'] != null ? Vector3.fromMap(data['velocity']) : null,
+        verticalVelocity: data['verticalVelocity'],
+        GPSVelocity: data['GPSVelocity'],
+        batteryLevel: data['batteryLevel'],
+        maxAltitude: data['maxAltitude'],
+        maxSpeed: data['maxSpeed'],
+        apogee: data['apogee'],
+        timestamp: (data['timestamp'] as Timestamp).toDate());
   }
 
   Rocket.fromJson(Map<String, dynamic>? json) {
     rocketID = json?['rocketID'];
     altitude = json?['altitude'];
-    altitudeGPS = json?['altitudeGPS'];  
+    altitudeGPS = json?['altitudeGPS'];
     coordinates = json?['coordinates'] != null
         ? Geopoint.fromJson(json?['coordinates'])
         : null;
@@ -70,6 +78,7 @@ class Rocket {
     batteryLevel = json?['batteryLevel'];
     maxAltitude = json?['maxAltitude'];
     maxSpeed = json?['maxSpeed'];
+    apogee = json?['apogee'];
     timestamp = (json?['timestamp'] as Timestamp).toDate();
   }
 
@@ -94,6 +103,7 @@ class Rocket {
     data['batteryLevel'] = batteryLevel;
     data['maxAltitude'] = maxAltitude;
     data['maxSpeed'] = maxSpeed;
+    data['apogee'] = apogee;
     data['timestamp'] = timestamp;
 
     return data;
@@ -150,8 +160,10 @@ class RocketComparator {
   Rocket? currentRocket;
 
   bool compareAttribute<T>(T? Function(Rocket) attributeGetter) {
-    final T? previousValue = previousRocket != null ? attributeGetter(previousRocket!) : null;
-    final T? currentValue = currentRocket != null ? attributeGetter(currentRocket!) : null;
+    final T? previousValue =
+        previousRocket != null ? attributeGetter(previousRocket!) : null;
+    final T? currentValue =
+        currentRocket != null ? attributeGetter(currentRocket!) : null;
 
     return previousValue != currentValue;
   }

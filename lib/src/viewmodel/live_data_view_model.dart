@@ -7,7 +7,8 @@ import 'package:roc_flight/src/viewmodel/flight_view_model.dart';
 import 'package:roc_flight/src/model/rocket.dart';
 
 class LiveDataViewModel extends ChangeNotifier {
-  CollectionReference collection = FirebaseFirestore.instance.collection('flights');
+  CollectionReference collection =
+      FirebaseFirestore.instance.collection('flights');
   late final FlightViewModel _flightViewModel;
 
   LiveDataViewModel(FlightViewModel flightViewModel) {
@@ -27,34 +28,33 @@ class LiveDataViewModel extends ChangeNotifier {
   Rocket? previousRocket;
   Rocket? currentRocket;
 
- // fetch the latest rocket data from the database, and add a buffer for wanted values as graph
+  // fetch the latest rocket data from the database, and add a buffer for wanted values as graph
   void _listenToFlightUpdates(String? documentId) {
     if (documentId?.isNotEmpty ?? false) {
       final ref = collection.doc(documentId).collection("rocket");
 
-      ref
-        .orderBy("timestamp", descending: true)
-        .limit(1)
-        .snapshots()
-        .listen(
-          (snapshot) {
-            final rocket = (snapshot.size > 0) 
-              ? Rocket.fromFirestore(snapshot.docs[0].id, snapshot.docs[0].data())
+      ref.orderBy("timestamp", descending: true).limit(1).snapshots().listen(
+        (snapshot) {
+          final rocket = (snapshot.size > 0)
+              ? Rocket.fromFirestore(
+                  snapshot.docs[0].id, snapshot.docs[0].data())
               : null;
 
-            previousRocket = currentRocket;
+          previousRocket = currentRocket;
 
-            if (rocket != null) {
-              currentRocket = rocket;
+          if (rocket != null) {
+            currentRocket = rocket;
 
-              rocketBuffer.add(currentRocket!);
-              if (rocketBuffer.length > 5) { rocketBuffer.removeAt(0); }
-
-              notifyListeners();
+            rocketBuffer.add(currentRocket!);
+            if (rocketBuffer.length > 5) {
+              rocketBuffer.removeAt(0);
             }
-          },
-          onError: (error) => print("Listen failed: $error"),
-        );
+
+            notifyListeners();
+          }
+        },
+        onError: (error) => print("Listen failed: $error"),
+      );
     }
   }
 
@@ -66,19 +66,20 @@ class LiveDataViewModel extends ChangeNotifier {
     return 'Launched';
   }
 
-  Vector3 get gyroscope => currentRocket?.gyroscope ?? Vector3(0,0,0);
-  Geopoint get coordinates => currentRocket?.coordinates ?? Geopoint(0,0);
-  Vector3 get acceleration => currentRocket?.acceleration ?? Vector3(0,0,0);
+  Vector3 get gyroscope => currentRocket?.gyroscope ?? Vector3(0, 0, 0);
+  Geopoint get coordinates => currentRocket?.coordinates ?? Geopoint(0, 0);
+  Vector3 get acceleration => currentRocket?.acceleration ?? Vector3(0, 0, 0);
 
   int get batteryLevel => currentRocket?.batteryLevel ?? 0;
 
   double get altitude => currentRocket?.altitude ?? 0.0;
   double get altitudeGPS => currentRocket?.altitudeGPS ?? 0.0;
 
-  Vector3 get velocity => currentRocket?.velocity ?? Vector3(0,0,0);
+  Vector3 get velocity => currentRocket?.velocity ?? Vector3(0, 0, 0);
   double get verticalVelocity => currentRocket?.verticalVelocity ?? 0.0;
   double get maxVelocity => currentRocket?.maxSpeed ?? 0.0;
   double get maxAltitude => currentRocket?.maxAltitude ?? 0.0;
+  double get apogee => currentRocket?.apogee ?? 0.0;
   double get mockCurrentRollRate => 0;
   double get mockMaxRollRate => 0;
   double get mockMaxAcceleration => 0;
@@ -90,12 +91,17 @@ class LiveDataViewModel extends ChangeNotifier {
     return rocketComparator.compareAttribute(attributeGetter);
   }
 
-  List<double> get altitudeBuffer => rocketBuffer.map((r) => r.altitude??0.0).toList();
-  List<double> get altitudeGPSBuffer => rocketBuffer.map((r) => r.altitudeGPS??0.0).toList();
+  List<double> get altitudeBuffer =>
+      rocketBuffer.map((r) => r.altitude ?? 0.0).toList();
+  List<double> get altitudeGPSBuffer =>
+      rocketBuffer.map((r) => r.altitudeGPS ?? 0.0).toList();
 
-  List<double> get accelerationXBuffer => rocketBuffer.map((r) => r.acceleration?.x??0.0).toList();
-  List<double> get accelerationYBuffer => rocketBuffer.map((r) => r.acceleration?.y??0.0).toList();
-  List<double> get accelerationZBuffer => rocketBuffer.map((r) => r.acceleration?.z??0.0).toList();
+  List<double> get accelerationXBuffer =>
+      rocketBuffer.map((r) => r.acceleration?.x ?? 0.0).toList();
+  List<double> get accelerationYBuffer =>
+      rocketBuffer.map((r) => r.acceleration?.y ?? 0.0).toList();
+  List<double> get accelerationZBuffer =>
+      rocketBuffer.map((r) => r.acceleration?.z ?? 0.0).toList();
 
   @override
   // ignore: must_call_super

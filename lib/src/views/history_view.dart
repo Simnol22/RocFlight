@@ -42,6 +42,7 @@ class HistoryView extends StatelessWidget {
                         children: <Widget>[
                           Text('Max Speed: ${rocket?.maxSpeed}'),
                           Text('Max Altitude: ${rocket?.maxAltitude}'),
+                          Text('Apogee: ${rocket?.apogee}'),
                         ]);
                   }
                 },
