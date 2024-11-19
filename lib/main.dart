@@ -17,7 +17,7 @@ void main() async {
   // Load the user's preferred theme while the splash screen is displayed.
   // This prevents a sudden theme change when the app is first displayed.
   await settingsController.loadSettings();
-  
+
   // This initializes Firebase services in the Flutter app.
   // Necessary for using Firebase features like Firestore, Authentication, etc.
   await Firebase.initializeApp(
