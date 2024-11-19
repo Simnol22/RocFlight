@@ -1,33 +1,26 @@
-# roc_flight
+# Roc Flight
 
-A new Flutter project.
+A flight computer and ground station software as one application.
 
-## Getting Started
+## What does it do ?
+The basic idea is a mobile app with two main modes : Rocket and Launcher (Ground station)
 
-This project is a starting point for a Flutter application that follows the
-[simple app state management
-tutorial](https://flutter.dev/docs/development/data-and-backend/state-mgmt/simple).
-
-For help getting started with Flutter development, view the
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
-
-## Assets
-
-The `assets` directory houses images, fonts, and any other files you want to
-include with your application.
-
-The `assets/images` directory contains [resolution-aware
-images](https://flutter.dev/docs/development/ui/assets-and-images#resolution-aware).
-
-## Localization
-
-This project generates localized messages based on arb files found in
-the `lib/src/localization` directory.
-
-To support additional languages, please visit the tutorial on
-[Internationalizing Flutter
-apps](https://flutter.dev/docs/development/accessibility-and-localization/internationalization)
+### Rocket mode 
+This mode is for placing the cellphone in your rocket (yes, i know, but it's fine don't worry). The app then shows a code that the launcher can use on another phone to connect to the rocket.
+The app on rocket can :
+- Register data from various sensors (Accelerometer, temperature, barometer)
+- Register its GPS location
+- Send selected data to a database in real-time
+- Locally save data
+### Launcher mode
+This mode is for the cellphone monitoring the flight (much safer). You first need to enter the rocket code from the other phone, than you can use the various modules, such as :
+- View all data from the connected rocket
+- View graphics from important data (accelerometer, altitude)
+- View detected apogee of the flight
+- View the position (coordinates) of the rocket in a map, updating in real-time
+- View the flight history associated with the cellphone
+## Architecture
+![alt text](arch.png)
 
 ## Post first flight : 
 - Slow flight detection. Might need to add a button for faster sampling on demand
